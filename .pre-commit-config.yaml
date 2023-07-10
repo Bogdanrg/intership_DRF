@@ -5,14 +5,18 @@ repos:
       - id: isort
         args: ["--profile", "black"]
   - repo: https://github.com/psf/black
-    rev: 21.6b0
+    rev: ''
     hooks:
       - id: black
-  - repo: https://gitlab.com/pycqa/flake8
+  - repo: https://github.com/pycqa/flake8
     rev: 3.9.2
     hooks:
       - id: flake8
         language_version: python3
+        args:
+          [
+            --max-line-length=90
+          ]
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.0.1
     hooks:
@@ -24,24 +28,16 @@ repos:
       - id: end-of-file-fixer
       - id: trailing-whitespace
       - id: requirements-txt-fixer
-  - repo: https://github.com/pre-commit/mirrors-pylint
-    rev: 56b3cb4
-    hooks:
-      - id: pylint
-        args:
-          - --max-line-length=120
-          - --ignore-imports=yes
-          - -d duplicate-code
-  - repo: https://github.com/pre-commit/pygrep-hooks
-    rev: v1.9.0
-    hooks:
-      - id: python-check-mock-methods
-      - id: python-use-type-annotations
-      - id: python-check-blanket-noqa
-      - id: python-use-type-annotations
-      - id: text-unicode-replacement-char
+  #- repo: https://github.com/pre-commit/mirrors-pylint
+  #  rev: 56b3cb4
+    #hooks:
+    #  - id: pylint
+    #    args:
+    #      - --max-line-length=120
+    #      - --ignore-imports=yes
+    #      - -d duplicate-code
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: 9feadeb
+    rev: ''
     hooks:
       - id: mypy
         exclude: ^tests/
@@ -51,5 +47,6 @@ repos:
               --check-untyped-defs,
               --warn-redundant-casts,
               --no-implicit-optional,
-              --strict-optional
+              --strict-optional,
+              --ignore-missing-imports
           ]

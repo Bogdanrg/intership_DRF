@@ -1,0 +1,13 @@
+version: '3.7'
+
+services:
+  backend:
+    build: .
+    container_name: "DRF"
+    entrypoint: ["bash", "entrypoint.sh"]
+    ports:
+    - "8000:8000"
+    volumes:
+      - .:/usr/src/app/
+    env_file:
+      - .env

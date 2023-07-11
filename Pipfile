@@ -7,6 +7,9 @@ name = "pypi"
 python-dotenv = "*"
 django = "*"
 flake8 = "*"
+django-enum = "*"
+pillow = "*"
+pre-commit = "*"
 
 [dev-packages]
 

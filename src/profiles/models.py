@@ -13,7 +13,7 @@ class TradingUser(AbstractUser):
         ANALYST = "analyst", "analyst"
         DEFAULT_USER = "default", "default"
 
-    avatar = models.ImageField(upload_to="users/avatar/", blank=True, null=True)
+    avatar = models.CharField(max_length=100, blank=True, null=True)
     login = models.CharField(max_length=30)
     balance = models.DecimalField(decimal_places=10, max_digits=20)
     date_joined = models.DateTimeField(auto_now_add=True)

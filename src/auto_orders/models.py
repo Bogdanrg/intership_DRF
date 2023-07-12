@@ -5,6 +5,7 @@ from src.base.classes import AbstractOrder
 
 class AutoOrder(AbstractOrder):
     begun_at = models.DateTimeField(auto_now_add=True)
+    direction = models.DecimalField(decimal_places=10, max_digits=20)
 
     class Meta:
         constraints = [

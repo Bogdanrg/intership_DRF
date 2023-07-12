@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "src.promotions",
     "src.orders",
     "src.auto_orders",
+    "src.portfolio",
 ]
 
 MIDDLEWARE = [

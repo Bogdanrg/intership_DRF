@@ -29,7 +29,7 @@ DEBUG = bool(os.getenv("DEBUG", True))
 
 load_dotenv()
 
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS").split(" ")
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(" ")
 
 # Application definition
 
@@ -40,6 +40,11 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "src.profiles",
+    "src.promotions",
+    "src.orders",
+    "src.auto_orders",
+    "src.portfolio",
 ]
 
 MIDDLEWARE = [
@@ -107,7 +112,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = "Europe/Moscow"
 
 USE_I18N = True
 
@@ -120,5 +125,8 @@ STATIC_URL = "static/"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
+
+
+AUTH_USER_MODEL = "profiles.TradingUser"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

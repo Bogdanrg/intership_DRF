@@ -1,8 +1,11 @@
-from django.conf import settings
 from django.db import models
 from django_enum import EnumField
 
 from src.promotions.models import Promotion
+
+from rest_framework import mixins
+from rest_framework.viewsets import GenericViewSet
+from .permissions import MixedPermission
 
 
 class AbstractDate(models.Model):
@@ -19,10 +22,28 @@ class AbstractOrder(AbstractDate):
         FAILURE = "completed with an error", "completed with an error"
 
     promotion = models.ForeignKey(Promotion, on_delete=models.PROTECT)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     quantity = models.PositiveIntegerField()
     status = EnumField(OrderStatus, null=True, blank=True)
     total_sum = models.DecimalField(decimal_places=10, max_digits=20)
 
     class Meta:
         abstract = True
+
+
+class MixedPermissionListGenericViewSet(mixins.ListModelMixin,
+                                        MixedPermission,
+                                        GenericViewSet):
+    pass
+
+
+class MixedPermissionCRUD(mixins.RetrieveModelMixin,
+                          mixins.UpdateModelMixin,
+                          mixins.DestroyModelMixin,
+                          MixedPermission,
+                          mixins.CreateModelMixin,
+                          GenericViewSet):
+    pass
+
+
+class List(mixins.ListModelMixin, GenericViewSet):
+    pass

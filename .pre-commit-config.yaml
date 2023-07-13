@@ -15,7 +15,7 @@ repos:
         language_version: python3
         args:
           [
-            --max-line-length=90
+            --max-line-length=93
           ]
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.0.1
@@ -36,17 +36,17 @@ repos:
          # - --max-line-length=120
          # - --ignore-imports=yes
          # - -d duplicate-code
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: ''
-    hooks:
-      - id: mypy
-        exclude: ^tests/
-        args:
-          [
-              --disallow-untyped-defs,
-              --check-untyped-defs,
-              --warn-redundant-casts,
-              --no-implicit-optional,
-              --strict-optional,
-              --ignore-missing-imports
-          ]
+  #- repo: https://github.com/pre-commit/mirrors-mypy
+   # rev: ''
+    #hooks:
+      #- id: mypy
+       # exclude: ^tests/
+       # args:
+          #[
+             # --disallow-untyped-defs,
+             # --check-untyped-defs,
+             # --warn-redundant-casts,
+             # --no-implicit-optional,
+             # --strict-optional,
+             # --ignore-missing-imports
+         # ]

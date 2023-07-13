@@ -11,6 +11,7 @@ django-enum = "*"
 pillow = "*"
 pre-commit = "*"
 djangorestframework = "*"
+psycopg2 = "*"
 
 [dev-packages]
 

@@ -11,3 +11,21 @@ services:
       - .:/usr/src/app/
     env_file:
       - .env
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres
+    container_name: 'postgres_db'
+    volumes:
+      - trading:/var/lib/postgresql/data/
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_USER=trading_user
+      - POSTGRES_PASSWORD=trading_pass
+      - POSTGRES_DB=trading
+
+volumes:
+  trading:
+    external: true

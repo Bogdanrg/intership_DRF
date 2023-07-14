@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 
 from src.base.classes import AbstractOrder
@@ -5,6 +6,10 @@ from src.base.classes import AbstractOrder
 
 class AutoOrder(AbstractOrder):
     begun_at = models.DateTimeField(auto_now_add=True)
+    direction = models.DecimalField(decimal_places=10, max_digits=20)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                             on_delete=models.PROTECT,
+                             related_name='auto_orders')
 
     class Meta:
         constraints = [

@@ -40,10 +40,14 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "rest_framework",
+    "src.custom_jwt",
+    "src.v1",
     "src.profiles",
     "src.promotions",
     "src.orders",
     "src.auto_orders",
+    "src.portfolio",
 ]
 
 MIDDLEWARE = [
@@ -54,6 +58,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "config.middleware.CustomMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -79,10 +84,15 @@ WSGI_APPLICATION = "config.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
+
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": os.getenv("SQL_ENGINE", "django.db.backends.sqlite3"),
+        "NAME": os.getenv("SQL_DATABASE", os.path.join(BASE_DIR, "db.sqlite3")),
+        "USER": os.getenv("SQL_USER", "user"),
+        "PASSWORD": os.getenv("SQL_PASSWORD", "password"),
+        "HOST": os.getenv("SQL_HOST", "localhost"),
+        "PORT": os.getenv("SQL_PORT", "5432"),
     }
 }
 
@@ -91,20 +101,29 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        "NAME": "django.contrib.auth.password_validation"
+        "NAME": "django.contrib.custom_jwt.password_validation"
         ".UserAttributeSimilarityValidator",
     },
     {
-        "NAME": "django.contrib.auth" ".password_validation.MinimumLengthValidator",
+        "NAME": "django.contrib.custom_jwt"
+        ".password_validation.MinimumLengthValidator",
     },
     {
-        "NAME": "django.contrib.auth." "password_validation.CommonPasswordValidator",
+        "NAME": "django.contrib.custom_jwt."
+        "password_validation.CommonPasswordValidator",
     },
     {
-        "NAME": "django.contrib.auth." "password_validation.NumericPasswordValidator",
+        "NAME": "django.contrib.custom_jwt."
+        "password_validation.NumericPasswordValidator",
     },
 ]
 
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.BasicAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+    ]
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/

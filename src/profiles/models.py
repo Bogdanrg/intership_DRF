@@ -13,14 +13,12 @@ class TradingUser(AbstractUser):
         ANALYST = "analyst", "analyst"
         DEFAULT_USER = "default", "default"
 
-    avatar = models.ImageField(upload_to="users/avatar/", blank=True, null=True)
+    avatar = models.CharField(max_length=100, blank=True, null=True)
     login = models.CharField(max_length=30)
     balance = models.DecimalField(decimal_places=10, max_digits=20, default=0)
     date_joined = models.DateTimeField(auto_now_add=True)
-    role = EnumField(RoleEnum, blank=True, default="default")
-    subscription = models.ForeignKey(
-        Promotion, on_delete=models.CASCADE, blank=True, null=True
-    )
+    role = EnumField(RoleEnum, default='admin', blank=True)
+    subscription = models.ForeignKey(Promotion, on_delete=models.CASCADE, null=True)
 
     class Meta:
         constraints = [

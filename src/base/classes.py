@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.db import models
 from django_enum import EnumField
 
@@ -19,10 +18,9 @@ class AbstractOrder(AbstractDate):
         FAILURE = "completed with an error", "completed with an error"
 
     promotion = models.ForeignKey(Promotion, on_delete=models.PROTECT)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     quantity = models.PositiveIntegerField()
     status = EnumField(OrderStatus, null=True, blank=True)
-    total_sum = models.DecimalField(decimal_places=10, max_digits=20)
+    total_sum = models.DecimalField(decimal_places=10, max_digits=20, blank=True)
 
     class Meta:
         abstract = True

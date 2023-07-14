@@ -1,23 +1,33 @@
+from django.db.models import F
+
 from src.promotions.models import Promotion
 
 
 class OrderCreationService:
+    def __init__(self):
+        self.__user = None
+        self.__promotion = None
 
-    #def __init__(self, request_data):
-       # self.__
-
-    def create_order(self, request_data: dict, pk: int) -> dict:
-        promotion = Promotion.objects.get(pk=pk)
+    def create_order(self, request) -> dict:
         data = {
-            'promotion': promotion.pk,
-            'total_sum': int(request_data['quantity']) * promotion.price,
-            'status': 'pending',
-            'quantity': request_data['quantity']
+            "promotion": self.__promotion.pk,
+            "total_sum": int(request.data["quantity"]) * self.__promotion.price,
+            "status": "pending",
+            "quantity": request.data["quantity"],
         }
         return data
 
-   #@staticmethod
-   #def is_affordable():
+    def is_affordable(self, request) -> bool:
+        self.__user = request.user
+        self.__promotion = Promotion.objects.get(pk=request.data["pk"])
+        if request.data["quantity"] <= 0:
+            return False
+        if self.__user.balance >= (
+            self.__promotion.price * int(request.data["quantity"])
+        ):
+            return True
+        return False
 
-
-order_service = OrderCreationService()
+    def reduce_user_balance(self, data: dict) -> None:
+        self.__user.balance = F('balance') - data['total_sum']
+        self.__user.save()

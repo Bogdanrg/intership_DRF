@@ -14,6 +14,10 @@ SAFE_PATHS = [
     "/api/auth-custom/refresh/",
     "/admin/",
     "/admin/orders/order/",
+    "/admin/profiles/tradinguser/",
+    "/admin/profiles/tradinguser/add/",
+    '/admin/profiles/tradinguser/2/change/'
+
 ]
 
 load_dotenv()
@@ -31,13 +35,12 @@ def create_response(code, message):
 
 class CustomMiddleware(MiddlewareMixin):
     def process_request(self, request):
-        jwt_token = request.headers.get("authorization", None)
+        jwt_token = request.headers.get("JWT", None)
 
         if jwt_token:
             try:
                 payload = jwt.decode(jwt_token, SECRET_KEY, algorithms=["HS256"])
                 username = payload["username"]
-                print(username)
                 request.user = TradingUser.objects.get(username=username)
                 setattr(request, "_dont_enforce_csrf_checks", True)
                 return None

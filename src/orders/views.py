@@ -32,10 +32,11 @@ class UsersOrderListViewSet(
         if affordable:
             data = order_service.create_order(request)
             serializer = self.get_serializer(data=data)
-            serializer.is_valid(raise_exception=True)            # resolve it
+            serializer.is_valid(raise_exception=True)
             self.perform_create(serializer)
             order_service.reduce_user_balance(data)
-            return response.Response(OrderSerializer(serializer.data).data, status=status.HTTP_201_CREATED)
+            order_service.update_portfolio(data)
+            return response.Response(serializer.data, status=status.HTTP_201_CREATED)
         return response.Response(
             "You don't have enough money or something went wrong",
             status.HTTP_406_NOT_ACCEPTABLE,
@@ -58,5 +59,5 @@ class OrderViewSet(
     permission_classes_by_action = {
         "retrieve": [IsAdminOrAnalyst],
         "update": [IsAdmin],
-        "destroy": [IsAdmin],
+        "destroy": [IsAdmin]
     }

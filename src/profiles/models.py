@@ -17,7 +17,7 @@ class TradingUser(AbstractUser):
     login = models.CharField(max_length=30)
     balance = models.DecimalField(decimal_places=10, max_digits=20, default=0)
     date_joined = models.DateTimeField(auto_now_add=True)
-    role = EnumField(RoleEnum, default='admin', blank=True)
+    role = EnumField(RoleEnum, default='default', blank=True)
     subscription = models.ForeignKey(Promotion, on_delete=models.CASCADE, null=True)
 
     class Meta:

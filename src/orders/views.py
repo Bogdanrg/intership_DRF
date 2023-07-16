@@ -8,7 +8,7 @@ from src.base.serializers import ActionSerializerMixin
 
 from .models import Order
 from .serializers import CreateOrderSerializer, OrderListSerializer, OrderSerializer
-from .services import OrderCreationService
+from .services import OrderCreationService, OrderSellService
 
 
 @method_decorator(transaction.atomic, name='create')
@@ -27,7 +27,7 @@ class UsersOrderListViewSet(
         return self.request.user.orders.all().select_related("promotion")
 
     def create(self, request, *args, **kwargs) -> response.Response:
-        order_service = OrderCreationService()
+        order_service = OrderCreationService(request)
         affordable = order_service.is_affordable(request)
         if affordable:
             data = order_service.create_order(request)
@@ -61,3 +61,25 @@ class OrderViewSet(
         "update": [IsAdmin],
         "destroy": [IsAdmin]
     }
+
+
+@method_decorator(transaction.atomic, name='create')
+class OrderSellViewSet(viewsets.GenericViewSet,
+                       mixins.CreateModelMixin):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = CreateOrderSerializer
+
+    def create(self, request, *args, **kwargs) -> response.Response:
+        order_service = OrderSellService(request)
+        if order_service.in_presence(request.data):
+            data = order_service.create_order(request.data)
+            serializer = self.get_serializer(data=data)
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
+            order_service.increase_user_balance(data)
+            order_service.update_portfolio(request)
+            return response.Response(serializer.data, status=status.HTTP_200_OK)
+        return response.Response("You don't have enough promotions", status=status.HTTP_400_BAD_REQUEST)
+
+    def perform_create(self, serializer) -> None:
+        serializer.save(user=self.request.user)

@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "src.orders",
     "src.auto_orders",
     "src.portfolio",
+    'django_rest_passwordreset'
 ]
 
 MIDDLEWARE = [
@@ -121,6 +122,21 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.SessionAuthentication",
     ]
 }
+
+CELERY_BROKER_URL = os.getenv('REDIS_URL')
+CELERY_ACCEPT_CONTENT = {'application/json'}
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'Europe/Moscow'
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_USE_TLS = True
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_HOST_USER = "tsimafeyeu.b@gmail.com"
+EMAIL_HOST_PASSWORD = "hmyddrqtcomzkpbk"
+DEFAULT_FROM_EMAIL = 'tsimafeyeu.b@gmail.com'
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/

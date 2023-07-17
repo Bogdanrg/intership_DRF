@@ -8,7 +8,7 @@ from src.base.serializers import ActionSerializerMixin
 
 from .models import Order
 from .serializers import CreateOrderSerializer, OrderListSerializer, OrderSerializer
-from .services import OrderCreationService, OrderSellService
+from .services import OrderBuyService, OrderSellService
 
 
 @method_decorator(transaction.atomic, name='create')
@@ -18,16 +18,17 @@ class UsersOrderListViewSet(
     mixins.ListModelMixin,
     mixins.CreateModelMixin,
 ):
+    permission_classes = [permissions.IsAuthenticated]
     serializer_classes_by_action = {
         "list": OrderListSerializer,
         "create": CreateOrderSerializer,
     }
 
     def get_queryset(self) -> QuerySet:
-        return self.request.user.orders.all().select_related("promotion")
+        return self.request.user.orders.filter(action='purchase').select_related("promotion")
 
     def create(self, request, *args, **kwargs) -> response.Response:
-        order_service = OrderCreationService(request)
+        order_service = OrderBuyService(request)
         affordable = order_service.is_affordable(request)
         if affordable:
             data = order_service.create_order(request)
@@ -64,10 +65,19 @@ class OrderViewSet(
 
 
 @method_decorator(transaction.atomic, name='create')
-class OrderSellViewSet(viewsets.GenericViewSet,
-                       mixins.CreateModelMixin):
+class OrderSellListViewSet(ActionSerializerMixin,
+                           viewsets.GenericViewSet,
+                           mixins.ListModelMixin,
+                           mixins.CreateModelMixin
+                           ):
     permission_classes = [permissions.IsAuthenticated]
-    serializer_class = CreateOrderSerializer
+    serializer_classes_by_action = {
+        "list": OrderListSerializer,
+        "create": CreateOrderSerializer,
+    }
+
+    def get_queryset(self) -> QuerySet:
+        return self.request.user.orders.filter(action='sale').select_related("promotion")
 
     def create(self, request, *args, **kwargs) -> response.Response:
         order_service = OrderSellService(request)

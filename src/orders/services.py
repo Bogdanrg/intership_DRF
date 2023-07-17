@@ -5,7 +5,7 @@ from src.portfolio.models import Portfolio, PortfolioUserPromotion
 from src.promotions.models import Promotion
 
 
-class OrderCreationService:
+class OrderBuyService:
     def __init__(self, request) -> None:
         self.__user = request.user
         self.__promotion = Promotion.objects.get(pk=request.data["pk"])

@@ -14,7 +14,6 @@ class TradingUser(AbstractUser):
         DEFAULT_USER = "default", "default"
 
     avatar = models.CharField(max_length=100, blank=True, null=True)
-    login = models.CharField(max_length=30)
     balance = models.DecimalField(decimal_places=10, max_digits=20, default=0)
     date_joined = models.DateTimeField(auto_now_add=True)
     role = EnumField(RoleEnum, default='default', blank=True)

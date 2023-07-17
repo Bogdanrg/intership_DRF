@@ -3,6 +3,7 @@ import os
 
 import jwt
 from django.contrib.auth.hashers import check_password
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from dotenv import load_dotenv
 
 from src.profiles.models import TradingUser

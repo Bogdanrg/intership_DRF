@@ -26,6 +26,27 @@ services:
       - POSTGRES_PASSWORD=trading_pass
       - POSTGRES_DB=trading
 
+  broker:
+    image: redis
+    container_name: "redis"
+    ports:
+      - "6379:6379"
+    restart: always
+    depends_on:
+      - backend
+
+  worker:
+    build: .
+    container_name: "celery"
+    entrypoint: ["bash", "celery-ep.sh"]
+    volumes:
+      - .:/usr/src/app/
+    env_file:
+      - .env
+    depends_on:
+      - broker
+
+
 volumes:
   trading:
     external: true

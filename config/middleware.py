@@ -1,6 +1,6 @@
 import json
 import os
-
+import re
 import jwt
 from django.http import HttpResponse
 from django.utils.deprecation import MiddlewareMixin
@@ -8,16 +8,14 @@ from dotenv import load_dotenv
 
 from src.profiles.models import TradingUser
 
-SAFE_PATHS = [
-    "/api/auth-custom/",
-    "/admin/login/",
-    "/api/auth-custom/refresh/",
-    "/admin/",
-    "/admin/orders/order/",
-    "/admin/profiles/tradinguser/",
-    "/admin/profiles/tradinguser/add/",
-    '/admin/profiles/tradinguser/2/change/'
-
+AUTH_PATHS = [
+    '/api/auth-custom/',
+    '/api/auth-custom/registration/',
+    '/api/auth-custom/refresh/',
+    re.search('/api/auth-custom/verification/\S+',
+              '/api/auth-custom/verification/<username>'),
+    '/api/auth-custom/password_reset/',
+    '/api/auth-custom/password_reset/confirm/'
 ]
 
 load_dotenv()
@@ -56,7 +54,7 @@ class CustomMiddleware(MiddlewareMixin):
                 )
                 return HttpResponse(json.dumps(response), status=401)
         else:
-            if request.path in SAFE_PATHS:
+            if re.search(r'/admin\S+', request.path) or request.path in AUTH_PATHS:
                 return None
             response = create_response(
                 4001,

@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.db import models
 from django_enum import EnumField
 
@@ -18,11 +17,15 @@ class AbstractOrder(AbstractDate):
         SUCCESS = "completed successfully", "completed successfully"
         FAILURE = "completed with an error", "completed with an error"
 
+    class ActionTypes(models.TextChoices):
+        SALE = "sale", "sale"
+        PURCHASE = "purchase", "purchase"
+
     promotion = models.ForeignKey(Promotion, on_delete=models.PROTECT)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     quantity = models.PositiveIntegerField()
-    status = EnumField(OrderStatus, null=True, blank=True)
-    total_sum = models.DecimalField(decimal_places=10, max_digits=20)
+    status = EnumField(OrderStatus, default='pending')
+    total_sum = models.DecimalField(decimal_places=10, max_digits=20, blank=True)
+    action = EnumField(ActionTypes)
 
     class Meta:
         abstract = True

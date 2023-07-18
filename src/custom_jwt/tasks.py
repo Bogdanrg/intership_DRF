@@ -7,7 +7,7 @@ def send_notification_mail(self, target_mail, username):
     mail_subject = "Activate your account!"
     send_mail(
         subject=mail_subject,
-        message=f"127.0.0.1:8000/api/auth-custom/{username}",
+        message=f"127.0.0.1:8000/api/auth-custom/verification/{username}",
         from_email='tsimafeyeu.b@gmail.com',
         recipient_list=[target_mail],
         fail_silently=False,

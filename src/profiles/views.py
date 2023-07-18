@@ -1,4 +1,4 @@
-from rest_framework import mixins
+from rest_framework import mixins, permissions
 from rest_framework.viewsets import GenericViewSet
 from src.promotions.models import Promotion
 from src.base.permissions import ActionPermissionMixin, IsAdmin, IsOwnerOrAdmin
@@ -25,6 +25,7 @@ class UserProfileViewSet(
 class SubscribeOnPromotionListViewSet(GenericViewSet, mixins.CreateModelMixin, mixins.ListModelMixin):
 
     serializer_class = PromotionSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         return Promotion.objects.filter(id=self.request.user.subscription_id)

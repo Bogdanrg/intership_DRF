@@ -7,4 +7,4 @@ class PortfolioSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PortfolioUserPromotion
-        fields = '__all__'
+        exclude = ('portfolio', )

@@ -93,3 +93,18 @@ class OrderSellListViewSet(ActionSerializerMixin,
 
     def perform_create(self, serializer) -> None:
         serializer.save(user=self.request.user)
+
+
+class UsersTransactionsViewSet(viewsets.GenericViewSet,
+                               mixins.RetrieveModelMixin):
+    lookup_field = 'pk'
+    permission_classes = [IsAdminOrAnalyst]
+    serializer_class = OrderListSerializer
+
+    def get_queryset(self):
+        return Order.objects.filter(user=self.kwargs.get('pk'))
+
+    def retrieve(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return response.Response(serializer.data, status=status.HTTP_200_OK)

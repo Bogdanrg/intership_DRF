@@ -12,8 +12,6 @@ AUTH_PATHS = [
     '/api/auth-custom/',
     '/api/auth-custom/registration/',
     '/api/auth-custom/refresh/',
-    re.search('/api/auth-custom/verification/\S+',
-              '/api/auth-custom/verification/<username>'),
     '/api/auth-custom/password_reset/',
     '/api/auth-custom/password_reset/confirm/'
 ]
@@ -54,7 +52,9 @@ class CustomMiddleware(MiddlewareMixin):
                 )
                 return HttpResponse(json.dumps(response), status=401)
         else:
-            if re.search(r'/admin\S+', request.path) or request.path in AUTH_PATHS:
+            if re.search(r'/admin\S+', request.path) or request.path in AUTH_PATHS or \
+                    re.search('/api/auth-custom/verification\S+',
+                              request.path):
                 return None
             response = create_response(
                 4001,

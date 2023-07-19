@@ -35,17 +35,17 @@ repos:
           - --max-line-length=120
           - --ignore-imports=yes
           - -d duplicate-code
-  #- repo: https://github.com/pre-commit/mirrors-mypy
- #   rev: ''
- #   hooks:
- #     - id: mypy
- #       exclude: ^tests/
- #       args:
- #         [
- #             --disallow-untyped-defs,
-#              --check-untyped-defs,
-#              --warn-redundant-casts,
-#              --no-implicit-optional,
-#              --strict-optional,
-#              --ignore-missing-imports
-#          ]
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: ''
+    hooks:
+      - id: mypy
+        exclude: ^tests/
+        args:
+          [
+              --disallow-untyped-defs,
+              --check-untyped-defs,
+              --warn-redundant-casts,
+              --no-implicit-optional,
+              --strict-optional,
+              --ignore-missing-imports
+          ]

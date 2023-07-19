@@ -4,7 +4,7 @@ services:
   backend:
     build: .
     container_name: "DRF"
-    command: "python manage.py runserver 0.0.0.0:8000"
+    entrypoint: ["bash", "entrypoint.sh"]
     ports:
     - "8000:8000"
     volumes:
@@ -36,7 +36,7 @@ services:
   worker:
     build: .
     container_name: "celery"
-    command: "celery -A config worker -l info"
+    entrypoint: ["bash", "celery-ep.sh"]
     volumes:
       - .:/usr/src/app/
     env_file:

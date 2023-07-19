@@ -6,6 +6,7 @@ from src.profiles.models import TradingUser
 class UserCredentialsSerializer(serializers.Serializer):
     username = serializers.CharField()
     password = serializers.CharField()
+    email = serializers.CharField(required=False)
 
 
 class JWTPairSerializer(serializers.Serializer):
@@ -18,7 +19,7 @@ class RegistrationUserSerializer(serializers.ModelSerializer):
         model = TradingUser
         fields = ("username", "password", "email")
 
-    def create(self, validated_data):
+    def create(self, validated_data: dict) -> TradingUser:
         new_user = TradingUser.objects.create_user(**validated_data)
         new_user.is_active = False
         new_user.save()
@@ -28,3 +29,14 @@ class RegistrationUserSerializer(serializers.ModelSerializer):
 class ChangePasswordSerializer(serializers.Serializer):
     new_password = serializers.CharField()
     old_password = serializers.CharField()
+
+
+class ResetPasswordSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    email = serializers.CharField()
+
+
+class ConfirmResetPasswordSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    token = serializers.CharField()
+    password = serializers.CharField()

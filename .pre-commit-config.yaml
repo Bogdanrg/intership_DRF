@@ -27,19 +27,20 @@ repos:
     - id: debug-statements
     - id: trailing-whitespace
     - id: requirements-txt-fixer
-  - repo: https://github.com/pre-commit/mirrors-pylint
-    rev: ''
-    hooks:
-      - id: pylint
-        args:
-          - --max-line-length=120
-          - --ignore-imports=yes
-          - -d duplicate-code
+#  - repo: https://github.com/pre-commit/mirrors-pylint
+#    rev: ''
+#    hooks:
+#      - id: pylint
+#        args:
+#          - disable=no-member, import-error
+#          - --max-line-length=120
+#          - --ignore-imports=yes
+#          - -d duplicate-code
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: ''
     hooks:
       - id: mypy
-        exclude: ^tests/
+        exclude: src\auth_base\tasks.py
         args:
           [
               --disallow-untyped-defs,

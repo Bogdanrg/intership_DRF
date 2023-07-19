@@ -1,16 +1,23 @@
-from rest_framework import mixins, permissions, response, status, viewsets
+from rest_framework import generics, mixins, permissions, response, status, viewsets
+from rest_framework.authtoken.models import Token
+from rest_framework.request import Request
 from rest_framework.views import APIView
 
 from src.portfolio.models import Portfolio
 
 from ..profiles.models import TradingUser
-from .serializers import ChangePasswordSerializer, RegistrationUserSerializer
+from .serializers import (
+    ChangePasswordSerializer,
+    ConfirmResetPasswordSerializer,
+    RegistrationUserSerializer,
+    ResetPasswordSerializer,
+)
 from .services import JWTAuthService
-from .tasks import send_notification_mail
+from .tasks import send_change_password_mail, send_notification_mail
 
 
 class CreateTokenPairAPIView(APIView):
-    def post(self, request):
+    def post(self, request: Request) -> response.Response:
         jwt_service = JWTAuthService()
         access = jwt_service.check_credentials(request.data)
         if access:
@@ -21,10 +28,10 @@ class CreateTokenPairAPIView(APIView):
 
 
 class RefreshAccessToken(APIView):
-    def post(self, request):
+    def post(self, request: Request) -> response.Response:
         jwt_service = JWTAuthService()
         refresh_token = jwt_service.decode_refresh_token(request.data)
-        if refresh_token:
+        if isinstance(refresh_token, dict):
             data = jwt_service.encode_refresh(refresh_token)
             return response.Response(data, status=status.HTTP_200_OK)
         return response.Response(
@@ -33,7 +40,7 @@ class RefreshAccessToken(APIView):
 
 
 class RegistrationUserAPIView(APIView):
-    def post(self, request):
+    def post(self, request: Request) -> response.Response:
         serializer = RegistrationUserSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
@@ -43,7 +50,9 @@ class RegistrationUserAPIView(APIView):
 
 
 class ActivateUserAPIView(APIView):
-    def get(self, request, username, *args, **kwargs):
+    def get(
+        self, request: Request, username: str, *args: tuple, **kwargs: dict
+    ) -> response.Response:
         try:
             user = TradingUser.objects.get(username=username)
         except (TypeError, ValueError, OverflowError, TradingUser.DoesNotExist):
@@ -63,7 +72,9 @@ class ChangePasswordViewSet(viewsets.GenericViewSet, mixins.UpdateModelMixin):
     serializer_class = ChangePasswordSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    def update(self, request, *args, **kwargs):
+    def update(
+        self, request: Request, *args: tuple, **kwargs: dict
+    ) -> response.Response:
         user = request.user
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -72,3 +83,38 @@ class ChangePasswordViewSet(viewsets.GenericViewSet, mixins.UpdateModelMixin):
         user.set_password(serializer.data.get("new_password"))
         user.save()
         return response.Response("Password has been changed", status=status.HTTP_200_OK)
+
+
+class ResetPasswordAPIView(generics.GenericAPIView):
+    serializer_class = ResetPasswordSerializer
+
+    def post(self, request: Request) -> response.Response:
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = TradingUser.objects.get(username=serializer.data.get("username"))
+        token = Token.objects.create(user=user)
+        send_change_password_mail.delay(
+            serializer.data.get("email"),
+            f"127.0.0.1:8000/api/auth-custom/reset_password/confirm/,"
+            f"your token: {token.key}",
+        )
+        return response.Response("Check our email")
+
+
+class ConfirmResetPasswordAPIView(generics.GenericAPIView):
+    serializer_class = ConfirmResetPasswordSerializer
+
+    def post(self, request: Request) -> response.Response:
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = TradingUser.objects.get(username=serializer.data.get("username"))
+        token, created = Token.objects.get_or_create(user=user)
+        if not created:
+            if not serializer.data.get("token") == token.key:
+                token.delete()
+                return response.Response("Wrong token")
+            user.set_password(serializer.data.get("password"))
+            user.save()
+            token.delete()
+            return response.Response("Password has been changed")
+        return response.Response("Access denied")

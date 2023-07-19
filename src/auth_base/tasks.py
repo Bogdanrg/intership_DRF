@@ -8,7 +8,7 @@ load_dotenv()
 
 
 @shared_task(bind=True)
-def send_notification_mail(self, target_mail, username):
+def send_notification_mail(self: object, target_mail: str, username: str) -> str:
     mail_subject = "Activate your account!"
     send_mail(
         subject=mail_subject,
@@ -21,7 +21,7 @@ def send_notification_mail(self, target_mail, username):
 
 
 @shared_task(bind=True)
-def send_change_password_mail(self, target_mail, message):
+def send_change_password_mail(self: object, target_mail: str, message: str) -> str:
     mail_subject = "Reset your password!"
     send_mail(
         subject=mail_subject,

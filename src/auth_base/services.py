@@ -3,7 +3,6 @@ import os
 
 import jwt
 from django.contrib.auth.hashers import check_password
-from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from dotenv import load_dotenv
 
 from src.profiles.models import TradingUser
@@ -56,7 +55,7 @@ class JWTAuthService:
         return serializer.data
 
     @staticmethod
-    def encode_refresh(decoded_refresh_token) -> dict:
+    def encode_refresh(decoded_refresh_token: dict) -> dict:
         access_token = jwt.encode(
             {
                 "username": decoded_refresh_token.get("username"),

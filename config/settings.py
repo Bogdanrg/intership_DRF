@@ -15,9 +15,9 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from CORE_APPS.apps import CORE_APPS
-from DJANGO_APPS.apps import DJANGO_APPS
-from THIRD_PARTY_APPS.apps import THIRD_PARTY_APPS
+from src.CORE_APPS.apps import CORE_APPS
+from src.DJANGO_APPS.apps import DJANGO_APPS
+from src.THIRD_PARTY_APPS.apps import THIRD_PARTY_APPS
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent

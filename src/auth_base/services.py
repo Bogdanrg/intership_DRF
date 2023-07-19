@@ -16,7 +16,6 @@ SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 
 
 class JWTAuthService:
-
     @staticmethod
     def check_credentials(data: dict) -> bool:
         serializer = UserCredentialsSerializer(data=data)
@@ -34,28 +33,25 @@ class JWTAuthService:
         serializer.is_valid(raise_exception=True)
         access_token = jwt.encode(
             {
-                "username": serializer.data.get('username'),
+                "username": serializer.data.get("username"),
                 "type": "access_token",
                 "exp": datetime.datetime.now(tz=datetime.timezone.utc)
-                        + datetime.timedelta(minutes=5),
+                + datetime.timedelta(minutes=5),
             },
             SECRET_KEY,
-            algorithm="HS256"
+            algorithm="HS256",
         )
         refresh_token = jwt.encode(
             {
-                "username": serializer.data.get('username'),
+                "username": serializer.data.get("username"),
                 "type": "refresh_token",
                 "exp": datetime.datetime.now(tz=datetime.timezone.utc)
-                        + datetime.timedelta(hours=24),
+                + datetime.timedelta(hours=24),
             },
             SECRET_KEY,
-            algorithm="HS256"
+            algorithm="HS256",
         )
-        tokens = {
-            "access_token": access_token,
-            "refresh_token": refresh_token
-        }
+        tokens = {"access_token": access_token, "refresh_token": refresh_token}
         serializer = JWTPairSerializer(tokens)
         return serializer.data
 
@@ -63,17 +59,19 @@ class JWTAuthService:
     def encode_refresh(decoded_refresh_token) -> dict:
         access_token = jwt.encode(
             {
-                "username": decoded_refresh_token.get('username'),
+                "username": decoded_refresh_token.get("username"),
                 "type": "access_token",
                 "exp": datetime.datetime.now(tz=datetime.timezone.utc)
-                        + datetime.timedelta(minutes=5),
+                + datetime.timedelta(minutes=5),
             },
             SECRET_KEY,
             algorithm="HS256",
         )
         tokens = {
             "access_token": access_token,
-            "refresh_token": jwt.encode(decoded_refresh_token, SECRET_KEY, algorithm="HS256")
+            "refresh_token": jwt.encode(
+                decoded_refresh_token, SECRET_KEY, algorithm="HS256"
+            ),
         }
         serializer = JWTPairSerializer(tokens)
         return serializer.data
@@ -83,7 +81,9 @@ class JWTAuthService:
         try:
             serializer = JWTPairSerializer(data=data)
             serializer.is_valid(raise_exception=True)
-            return jwt.decode(serializer.data.get('refresh_token'), SECRET_KEY, algorithms=["HS256"])
+            return jwt.decode(
+                serializer.data.get("refresh_token"), SECRET_KEY, algorithms=["HS256"]
+            )
         except jwt.ExpiredSignatureError:
             return False
         except (jwt.DecodeError, jwt.InvalidTokenError):

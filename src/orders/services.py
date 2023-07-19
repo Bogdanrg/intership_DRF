@@ -2,87 +2,107 @@ from django.db.models import F
 from rest_framework.request import Request
 
 from src.portfolio.models import Portfolio, PortfolioUserPromotion
+from src.profiles.models import TradingUser
 from src.promotions.models import Promotion
 
 
 class OrderBuyService:
-    def __init__(self, request) -> None:
-        self.__user = request.user
-        self.__promotion = Promotion.objects.get(pk=request.data["pk"])
+    def __init__(self) -> None:
+        self._user = None
+        self._promotion = None
 
-    def create_order(self, request) -> dict:
+    def create_order(self, request: Request) -> dict | bool:
+        self._promotion = Promotion.objects.get(pk=request.data.get("pk"))
+        self._user = TradingUser.objects.get(pk=request.user.id)
         data = {
-            "promotion": self.__promotion.pk,
-            "total_sum": int(request.data["quantity"]) * self.__promotion.price,
+            "promotion": self._promotion.pk,
+            "total_sum": int(request.data["quantity"]) * self._promotion.price,
             "status": "pending",
             "quantity": request.data["quantity"],
-            "action": "purchase"
+            "action": "purchase",
         }
-        return data
+        if self._is_affordable(request):
+            self._reduce_user_balance(data)
+            self._update_portfolio(data)
+            data["status"] = "completed successfully"
+            return data
+        return False
 
-    def is_affordable(self, request) -> bool:
+    def _is_affordable(self, request: Request) -> bool:
         if request.data["quantity"] <= 0:
             return False
-        if self.__user.balance >= (
-                self.__promotion.price * int(request.data["quantity"])
+        if self._user.balance >= (
+            self._promotion.price * int(request.data["quantity"])
         ):
             return True
         return False
 
-    def reduce_user_balance(self, data: dict) -> None:
-        self.__user.balance = F('balance') - data['total_sum']
-        self.__user.save()
+    def _reduce_user_balance(self, data: dict) -> None:
+        self._user.balance = F("balance") - data["total_sum"]
+        self._user.save()
 
-    def update_portfolio(self, data: dict) -> None:
-        portfolio = Portfolio.objects.get(user=self.__user)
+    def _update_portfolio(self, data: dict) -> None:
+        portfolio = Portfolio.objects.get(user=self._user)
         try:
-            portfolio_user_promotion_obj = PortfolioUserPromotion.objects. \
-                get(portfolio=portfolio, promotion=self.__promotion)
+            portfolio_user_promotion_obj = PortfolioUserPromotion.objects.get(
+                portfolio=portfolio, promotion=self._promotion.pk
+            )
             if portfolio_user_promotion_obj:
-                portfolio_user_promotion_obj.quantity = F('quantity') + data['quantity']
+                portfolio_user_promotion_obj.quantity = F("quantity") + data["quantity"]
                 portfolio_user_promotion_obj.save()
         except PortfolioUserPromotion.DoesNotExist:
-            PortfolioUserPromotion.objects.create(portfolio=portfolio,
-                                                  promotion=self.__promotion,
-                                                  quantity=data['quantity'])
+            PortfolioUserPromotion.objects.create(
+                portfolio=portfolio,
+                promotion=self._promotion,
+                quantity=data["quantity"],
+            )
 
 
 class OrderSellService:
+    def __init__(self) -> None:
+        self._user = None
+        self._promotion = None
 
-    def __init__(self, request) -> None:
-        self.__user = request.user
-        self.__promotion = Promotion.objects.get(pk=request.data["pk"])
-
-    def in_presence(self, data: dict) -> bool:
-        portfolio = Portfolio.objects.get(user=self.__user)
+    def _in_presence(self, request: Request) -> bool:
+        portfolio = Portfolio.objects.get(user=self._user)
         try:
-            portfolio_user_promotion_obj = PortfolioUserPromotion.objects.get(promotion=data["pk"], portfolio=portfolio)
-            if portfolio_user_promotion_obj.quantity < data["quantity"]:
+            portfolio_user_promotion_obj = PortfolioUserPromotion.objects.get(
+                promotion=request.data["pk"], portfolio=portfolio
+            )
+            if portfolio_user_promotion_obj.quantity < request.data["quantity"]:
                 return False
             return True
         except PortfolioUserPromotion.DoesNotExist:
             return False
 
-    def create_order(self, data: dict) -> dict:
+    def create_order(self, request: Request) -> dict | bool:
+        self._promotion = Promotion.objects.get(pk=request.data.get("pk"))
+        self._user = TradingUser.objects.get(pk=request.user.id)
         data = {
-            "promotion": self.__promotion.pk,
-            "total_sum": int(data["quantity"]) * self.__promotion.price,
+            "promotion": self._promotion.pk,
+            "total_sum": int(request.data["quantity"]) * self._promotion.price,
             "status": "pending",
-            "quantity": data["quantity"],
-            "action": "sale"
+            "quantity": request.data["quantity"],
+            "action": "sale",
         }
-        return data
+        if self._in_presence(request):
+            self._increase_user_balance(data)
+            self._update_portfolio(data)
+            data["status"] = "completed successfully"
+            return data
+        return False
 
-    def increase_user_balance(self, data: dict) -> None:
-        self.__user.balance = F('balance') + data['total_sum']
-        self.__user.save()
+    def _increase_user_balance(self, data: dict) -> None:
+        self._user.balance = F("balance") + data["total_sum"]
+        self._user.save()
 
-    def update_portfolio(self, request: Request) -> None:
-        portfolio = Portfolio.objects.get(user=self.__user)
-        portfolio_user_promotion_obj = PortfolioUserPromotion.objects.get(promotion=request.data["pk"],
-                                                                          portfolio=portfolio)
-        if portfolio_user_promotion_obj.quantity - request.data['quantity'] == 0:
+    def _update_portfolio(self, data: dict) -> None:
+        portfolio = Portfolio.objects.get(user=self._user)
+        portfolio_user_promotion_obj = PortfolioUserPromotion.objects.get(
+            promotion=self._promotion.pk, portfolio=portfolio
+        )
+        if portfolio_user_promotion_obj.quantity - data["quantity"] == 0:
             portfolio_user_promotion_obj.delete()
         else:
-            portfolio_user_promotion_obj.quantity = F('quantity') - request.data['quantity']
+            portfolio_user_promotion_obj.quantity = F("quantity") - data["quantity"]
             portfolio_user_promotion_obj.save()

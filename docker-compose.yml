@@ -21,10 +21,8 @@ services:
       - trading:/var/lib/postgresql/data/
     ports:
       - "5433:5432"
-    environment:
-      - POSTGRES_USER=trading_user
-      - POSTGRES_PASSWORD=trading_pass
-      - POSTGRES_DB=trading
+    env_file:
+      - .env
 
   broker:
     image: redis

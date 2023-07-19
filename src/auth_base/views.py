@@ -1,10 +1,12 @@
-from rest_framework import response, status, viewsets, permissions, mixins
+from rest_framework import mixins, permissions, response, status, viewsets
 from rest_framework.views import APIView
-from .serializers import RegistrationUserSerializer, ChangePasswordSerializer
+
+from src.portfolio.models import Portfolio
+
+from ..profiles.models import TradingUser
+from .serializers import ChangePasswordSerializer, RegistrationUserSerializer
 from .services import JWTAuthService
 from .tasks import send_notification_mail
-from ..profiles.models import TradingUser
-from src.portfolio.models import Portfolio
 
 
 class CreateTokenPairAPIView(APIView):
@@ -31,12 +33,11 @@ class RefreshAccessToken(APIView):
 
 
 class RegistrationUserAPIView(APIView):
-
     def post(self, request):
         serializer = RegistrationUserSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        email = serializer.data.get('email')
+        email = serializer.data.get("email")
         send_notification_mail.delay(email, user.username)
         return response.Response("Verify your email", status=status.HTTP_200_OK)
 
@@ -53,7 +54,9 @@ class ActivateUserAPIView(APIView):
             user.is_active = True
             user.save()
             Portfolio.objects.create(user=user)
-            return response.Response("Your account has been confirmed", status=status.HTTP_200_OK)
+            return response.Response(
+                "Your account has been confirmed", status=status.HTTP_200_OK
+            )
 
 
 class ChangePasswordViewSet(viewsets.GenericViewSet, mixins.UpdateModelMixin):
@@ -64,8 +67,8 @@ class ChangePasswordViewSet(viewsets.GenericViewSet, mixins.UpdateModelMixin):
         user = request.user
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        if not user.check_password(serializer.data.get('old_password')):
+        if not user.check_password(serializer.data.get("old_password")):
             return response.Response("Wrong old password")
-        user.set_password(serializer.data.get('new_password'))
+        user.set_password(serializer.data.get("new_password"))
         user.save()
         return response.Response("Password has been changed", status=status.HTTP_200_OK)

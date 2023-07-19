@@ -1,108 +1,82 @@
-from django.db.models import QuerySet
+from django.db import transaction
 from django.utils.decorators import method_decorator
 from rest_framework import mixins, permissions, response, status, viewsets
-from django.db import transaction
 
-from src.base.permissions import ActionPermissionMixin, IsAdmin, IsAdminOrAnalyst
-from src.base.serializers import ActionSerializerMixin
+from src.base.mixins import ActionPermissionMixin, ActionSerializerMixin
+from src.base.permissions import IsAdmin, IsAdminOrAnalyst, IsOwnerOrAdminOrAnalyst
 
 from .models import Order
 from .serializers import CreateOrderSerializer, OrderListSerializer, OrderSerializer
 from .services import OrderBuyService, OrderSellService
 
 
-@method_decorator(transaction.atomic, name='create')
-class UsersOrderListViewSet(
+@method_decorator(transaction.atomic, name="create")
+class OrderCRUDViewSet(
     ActionSerializerMixin,
-    viewsets.GenericViewSet,
-    mixins.ListModelMixin,
-    mixins.CreateModelMixin,
-):
-    permission_classes = [permissions.IsAuthenticated]
-    serializer_classes_by_action = {
-        "list": OrderListSerializer,
-        "create": CreateOrderSerializer,
-    }
-
-    def get_queryset(self) -> QuerySet:
-        return self.request.user.orders.filter(action='purchase').select_related("promotion")
-
-    def create(self, request, *args, **kwargs) -> response.Response:
-        order_service = OrderBuyService(request)
-        affordable = order_service.is_affordable(request)
-        if affordable:
-            data = order_service.create_order(request)
-            serializer = self.get_serializer(data=data)
-            serializer.is_valid(raise_exception=True)
-            self.perform_create(serializer)
-            order_service.reduce_user_balance(data)
-            order_service.update_portfolio(data)
-            return response.Response(serializer.data, status=status.HTTP_201_CREATED)
-        return response.Response(
-            "You don't have enough money or something went wrong",
-            status.HTTP_406_NOT_ACCEPTABLE,
-        )
-
-    def perform_create(self, serializer) -> None:
-        serializer.save(user=self.request.user)
-
-
-class OrderViewSet(
     ActionPermissionMixin,
     viewsets.GenericViewSet,
     mixins.RetrieveModelMixin,
+    mixins.CreateModelMixin,
     mixins.UpdateModelMixin,
     mixins.DestroyModelMixin,
 ):
-    queryset = Order.objects.all().select_related("promotion")
-    serializer_class = OrderSerializer
-    permission_classes = [permissions.IsAuthenticated]
     permission_classes_by_action = {
-        "retrieve": [IsAdminOrAnalyst],
-        "update": [IsAdmin],
-        "destroy": [IsAdmin]
+        "create": (permissions.IsAuthenticated,),
+        "retrieve": (IsOwnerOrAdminOrAnalyst,),
+        "update": (IsAdmin,),
+        "destroy": (IsAdmin,),
     }
-
-
-@method_decorator(transaction.atomic, name='create')
-class OrderSellListViewSet(ActionSerializerMixin,
-                           viewsets.GenericViewSet,
-                           mixins.ListModelMixin,
-                           mixins.CreateModelMixin
-                           ):
-    permission_classes = [permissions.IsAuthenticated]
     serializer_classes_by_action = {
-        "list": OrderListSerializer,
+        "retrieve": OrderSerializer,
         "create": CreateOrderSerializer,
+        "update": OrderSerializer,
+        "destroy": OrderSerializer,
     }
-
-    def get_queryset(self) -> QuerySet:
-        return self.request.user.orders.filter(action='sale').select_related("promotion")
+    queryset = Order.objects.all().select_related("promotion")
 
     def create(self, request, *args, **kwargs) -> response.Response:
-        order_service = OrderSellService(request)
-        if order_service.in_presence(request.data):
-            data = order_service.create_order(request.data)
-            serializer = self.get_serializer(data=data)
-            serializer.is_valid(raise_exception=True)
-            self.perform_create(serializer)
-            order_service.increase_user_balance(data)
-            order_service.update_portfolio(request)
-            return response.Response(serializer.data, status=status.HTTP_200_OK)
-        return response.Response("You don't have enough promotions", status=status.HTTP_400_BAD_REQUEST)
+        if request.data.get("action") == "purchase":
+            order_service = OrderBuyService()
+            data = order_service.create_order(request)
+            if not data:
+                return response.Response(
+                    "You don't have enough money or something went wrong",
+                    status.HTTP_406_NOT_ACCEPTABLE,
+                )
+            data = self.init_data(data)
+            return response.Response(data, status=status.HTTP_200_OK)
+        if request.data.get("action") == "sale":
+            sell_order = OrderSellService()
+            data = sell_order.create_order(request)
+            if not data:
+                return response.Response(
+                    "You don't have enough promotions or something went wrong",
+                    status=status.HTTP_406_NOT_ACCEPTABLE,
+                )
+            data = self.init_data(data)
+            return response.Response(data, status=status.HTTP_200_OK)
+        else:
+            return response.Response(
+                "Not valid action", status=status.HTTP_406_NOT_ACCEPTABLE
+            )
 
     def perform_create(self, serializer) -> None:
         serializer.save(user=self.request.user)
 
+    def init_data(self, data: dict) -> dict:
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return serializer.data
 
-class UsersTransactionsViewSet(viewsets.GenericViewSet,
-                               mixins.RetrieveModelMixin):
-    lookup_field = 'pk'
-    permission_classes = [IsAdminOrAnalyst]
+
+class UsersTransactionsViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
+    lookup_field = "pk"
+    permission_classes = (IsAdminOrAnalyst,)
     serializer_class = OrderListSerializer
 
     def get_queryset(self):
-        return Order.objects.filter(user=self.kwargs.get('pk'))
+        return Order.objects.filter(user=self.kwargs.get("pk"))
 
     def retrieve(self, request, *args, **kwargs):
         queryset = self.get_queryset()

@@ -1,4 +1,5 @@
 from rest_framework import serializers
+
 from src.profiles.models import TradingUser
 
 
@@ -13,10 +14,9 @@ class JWTPairSerializer(serializers.Serializer):
 
 
 class RegistrationUserSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = TradingUser
-        fields = ('username', 'password', 'email')
+        fields = ("username", "password", "email")
 
     def create(self, validated_data):
         new_user = TradingUser.objects.create_user(**validated_data)

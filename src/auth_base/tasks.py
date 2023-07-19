@@ -1,5 +1,10 @@
+import os
+
 from celery import shared_task
 from django.core.mail import send_mail
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 @shared_task(bind=True)
@@ -8,7 +13,7 @@ def send_notification_mail(self, target_mail, username):
     send_mail(
         subject=mail_subject,
         message=f"127.0.0.1:8000/api/auth-custom/verification/{username}",
-        from_email='tsimafeyeu.b@gmail.com',
+        from_email=os.getenv("EMAIL_HOST_USER"),
         recipient_list=[target_mail],
         fail_silently=False,
     )
@@ -21,7 +26,7 @@ def send_change_password_mail(self, target_mail, message):
     send_mail(
         subject=mail_subject,
         message=message,
-        from_email='tsimafeyeu.b@gmail.com',
+        from_email=os.getenv("EMAIL_HOST_USER"),
         recipient_list=[target_mail],
         fail_silently=False,
     )

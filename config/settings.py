@@ -41,14 +41,14 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
-    "src.custom_jwt",
+    "src.auth_base",
     "src.v1",
     "src.profiles",
     "src.promotions",
     "src.orders",
     "src.auto_orders",
     "src.portfolio",
-    'django_rest_passwordreset'
+    "django_rest_passwordreset",
 ]
 
 MIDDLEWARE = [
@@ -59,7 +59,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "config.middleware.CustomMiddleware",
+    "config.middleware.AuthMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -123,19 +123,19 @@ REST_FRAMEWORK = {
     ]
 }
 
-CELERY_BROKER_URL = os.getenv('REDIS_URL')
-CELERY_ACCEPT_CONTENT = {'application/json'}
-CELERY_RESULT_SERIALIZER = 'json'
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_TIMEZONE = 'Europe/Moscow'
+CELERY_BROKER_URL = os.getenv("REDIS_URL")
+CELERY_ACCEPT_CONTENT = {os.getenv("CELERY_ACCEPT_CONTENT")}
+CELERY_RESULT_SERIALIZER = os.getenv("CELERY_RESULT_SERIALIZER")
+CELERY_TASK_SERIALIZER = os.getenv("CELERY_TASK_SERIALIZER")
+CELERY_TIMEZONE = os.getenv("CELERY_TIMEZONE")
 
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_USE_TLS = True
-EMAIL_HOST = "smtp.gmail.com"
-EMAIL_PORT = 587
-EMAIL_HOST_USER = "tsimafeyeu.b@gmail.com"
-EMAIL_HOST_PASSWORD = "hmyddrqtcomzkpbk"
-DEFAULT_FROM_EMAIL = 'tsimafeyeu.b@gmail.com'
+EMAIL_BACKEND = os.getenv("EMAIL_BACKEND")
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS")
+EMAIL_HOST = os.getenv("EMAIL_HOST")
+EMAIL_PORT = os.getenv("EMAIL_PORT")
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
 
 
 # Internationalization

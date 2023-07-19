@@ -1,8 +1,8 @@
 from rest_framework import mixins, permissions
 from rest_framework.viewsets import GenericViewSet
 
-from src.base.permissions import ActionPermissionMixin, IsAdmin
-from src.base.serializers import ActionSerializerMixin
+from src.base.mixins import ActionPermissionMixin, ActionSerializerMixin
+from src.base.permissions import IsAdmin
 
 from .models import Promotion
 from .serializers import PromotionListSerializer, PromotionSerializer
@@ -17,8 +17,8 @@ class CreateListPromotionViewSet(
 ):
     queryset = Promotion.objects.all()
     permission_classes_by_action = {
-        "list": [permissions.IsAuthenticated],
-        "create": [IsAdmin],
+        "list": (permissions.IsAuthenticated,),
+        "create": (IsAdmin,),
     }
     serializer_classes_by_action = {
         "list": PromotionListSerializer,
@@ -36,7 +36,7 @@ class RetrieveUpdateDestroyViewSet(
     queryset = Promotion.objects.all()
     serializer_class = PromotionSerializer
     permission_classes_by_action = {
-        "retrieve": [permissions.IsAuthenticated],
-        "update": [IsAdmin],
-        "destroy": [IsAdmin],
+        "retrieve": (permissions.IsAuthenticated,),
+        "update": (IsAdmin,),
+        "destroy": (IsAdmin,),
     }

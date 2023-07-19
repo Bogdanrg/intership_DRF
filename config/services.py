@@ -59,13 +59,13 @@ class AuthMiddlewareService:
         return request.headers.get("JWT", None)
 
     @staticmethod
-    def is_safe_path(request: Request) -> bool | HttpResponse:
+    def is_safe_path(request: Request) -> None | HttpResponse:
         if (
             re.search(r"/admin\S+", request.path)
             or request.path in AUTH_PATHS
             or re.search("/api/auth-custom/verification\S+", request.path)
         ):
-            return True
+            return None
         response = AuthMiddlewareService.create_response(
             4001,
             {"message": "Authorization not found, Please send valid token in headers"},

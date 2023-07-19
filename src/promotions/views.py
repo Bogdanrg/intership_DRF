@@ -8,35 +8,28 @@ from .models import Promotion
 from .serializers import PromotionListSerializer, PromotionSerializer
 
 
-class CreateListPromotionViewSet(
+class PromotionListCRUDViewSet(
     ActionPermissionMixin,
     ActionSerializerMixin,
+    mixins.RetrieveModelMixin,
     mixins.ListModelMixin,
     mixins.CreateModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
     GenericViewSet,
 ):
     queryset = Promotion.objects.all()
     permission_classes_by_action = {
         "list": (permissions.IsAuthenticated,),
         "create": (IsAdmin,),
+        "retrieve": (permissions.IsAuthenticated,),
+        "update": (IsAdmin,),
+        "destroy": (IsAdmin,),
     }
     serializer_classes_by_action = {
         "list": PromotionListSerializer,
         "create": PromotionSerializer,
-    }
-
-
-class RetrieveUpdateDestroyViewSet(
-    ActionPermissionMixin,
-    GenericViewSet,
-    mixins.RetrieveModelMixin,
-    mixins.UpdateModelMixin,
-    mixins.DestroyModelMixin,
-):
-    queryset = Promotion.objects.all()
-    serializer_class = PromotionSerializer
-    permission_classes_by_action = {
-        "retrieve": (permissions.IsAuthenticated,),
-        "update": (IsAdmin,),
-        "destroy": (IsAdmin,),
+        "retrieve": PromotionSerializer,
+        "update": PromotionSerializer,
+        "destroy": PromotionSerializer,
     }

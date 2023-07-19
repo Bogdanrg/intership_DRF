@@ -1,10 +1,12 @@
+from django.http import HttpResponse
 from django.utils.deprecation import MiddlewareMixin
+from rest_framework.request import Request
 
 from .services import AuthMiddlewareService
 
 
 class AuthMiddleware(MiddlewareMixin):
-    def process_request(self, request):
+    def process_request(self, request: Request) -> None | HttpResponse:
         auth_service = AuthMiddlewareService()
         jwt_token = auth_service.get_token(request)
         if jwt_token:
@@ -14,4 +16,4 @@ class AuthMiddleware(MiddlewareMixin):
                 return None
             return payload
         else:
-            auth_service.is_safe_path(request)
+            return auth_service.is_safe_path(request)

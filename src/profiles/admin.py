@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.utils.translation import gettext_lazy as _
+
 from .models import TradingUser
 
 
@@ -20,9 +21,9 @@ class TradingUserAdmin(UserAdmin):
                 ),
             },
         ),
-        (_("Important dates"), {"fields": ("last_login", )}),
+        (_("Important dates"), {"fields": ("last_login",)}),
     )
-    list_display = ("id", "username", "email", "role")
+    list_display = ("id", "username", "email", "role", "is_active")
 
 
 admin.site.register(TradingUser, TradingUserAdmin)

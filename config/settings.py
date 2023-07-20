@@ -15,10 +15,6 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from src.CORE_APPS.apps import CORE_APPS
-from src.DJANGO_APPS.apps import DJANGO_APPS
-from src.THIRD_PARTY_APPS.apps import THIRD_PARTY_APPS
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -36,8 +32,30 @@ load_dotenv()
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(" ")
 
 # Application definition
+CORE_APPS = [
+    "src.auth_base",
+    "src.v1",
+    "src.profiles",
+    "src.promotions",
+    "src.orders",
+    "src.auto_orders",
+    "src.portfolio",
+]
+
+DJANGO_APPS = [
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+]
+
+THIRD_PARTY_APPS = ["rest_framework", "rest_framework.authtoken"]
+
 
 INSTALLED_APPS = [*DJANGO_APPS, *CORE_APPS, *THIRD_PARTY_APPS]
+
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",

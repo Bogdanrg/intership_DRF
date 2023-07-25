@@ -12,6 +12,7 @@ RUN pip install -U pipenv \
 
 
 COPY entrypoint.sh /usr/src/app/entrypoint.sh
-COPY entrypoint.sh /usr/src/app/celery-ep.sh
+COPY celery-ep.sh /usr/src/app/celery-ep.sh
+COPY consumer-ep.sh /usr/src/app/consumer-ep.sh
 
 COPY . .

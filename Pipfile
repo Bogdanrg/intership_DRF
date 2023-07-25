@@ -15,6 +15,7 @@ psycopg2 = "*"
 pyjwt = "*"
 celery = "*"
 redis = "*"
+kafka-python = "*"
 
 [dev-packages]
 

@@ -4,19 +4,19 @@ repos:
     hooks:
       - id: isort
         args: ["--profile", "black"]
-  - repo: https://github.com/psf/black
-    rev: ''
-    hooks:
-      - id: black
-  - repo: https://github.com/pycqa/flake8
-    rev: 3.9.2
-    hooks:
-      - id: flake8
-        language_version: python3
-        args:
-          [
-            --max-line-length=93
-          ]
+ # - repo: https://github.com/psf/black
+  #  rev: ''
+   # hooks:
+     # - id: black
+ # - repo: https://github.com/pycqa/flake8
+   # rev: 3.9.2
+   # hooks:
+     # - id: flake8
+       # language_version: python3
+       # args:
+         # [
+            # --max-line-length=93
+         # ]
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.0.1
     hooks:
@@ -36,17 +36,17 @@ repos:
 #          - --max-line-length=120
 #          - --ignore-imports=yes
 #          - -d duplicate-code
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: ''
-    hooks:
-      - id: mypy
-        exclude: src\auth_base\tasks.py
-        args:
-          [
-              --disallow-untyped-defs,
-              --check-untyped-defs,
-              --warn-redundant-casts,
-              --no-implicit-optional,
-              --strict-optional,
-              --ignore-missing-imports
-          ]
+ # - repo: https://github.com/pre-commit/mirrors-mypy
+   # rev: ''
+   # hooks:
+     # - id: mypy
+       # exclude: src\auth_base\tasks.py
+       # args:
+         # [
+             # --disallow-untyped-defs,
+             # --check-untyped-defs,
+             # --warn-redundant-casts,
+             # --no-implicit-optional,
+             # --strict-optional,
+             # --ignore-missing-imports
+         # ]

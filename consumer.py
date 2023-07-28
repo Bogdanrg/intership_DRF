@@ -2,6 +2,7 @@ import os
 
 import django
 
+# flake8: noqa
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 django.setup()
 import json
@@ -9,8 +10,8 @@ import json
 from dotenv import load_dotenv
 from kafka import KafkaConsumer
 
-from src.promotions.models import Promotion
 from src.auto_orders.services import DistributiveAutoOrderService
+from src.promotions.models import Promotion
 
 load_dotenv()
 
@@ -22,6 +23,7 @@ print("Consumer's listening: ")
 while True:
     for message in consumer:
         consumed_message = json.loads(message.value)
+        print(consumed_message)
         if consumed_message.get("property", None) == "pull":
             for promotion in consumed_message["result"]:
                 Promotion.objects.create(avatar="AWS", description="Desc", **promotion)

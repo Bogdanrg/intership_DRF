@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 from kafka import KafkaConsumer
 
 from src.promotions.models import Promotion
+from src.auto_orders.services import DistributiveAutoOrderService
 
 load_dotenv()
 
@@ -21,6 +22,14 @@ print("Consumer's listening: ")
 while True:
     for message in consumer:
         consumed_message = json.loads(message.value)
-        if consumed_message["property"] == "pull":
+        if consumed_message.get("property", None) == "pull":
             for promotion in consumed_message["result"]:
                 Promotion.objects.create(avatar="AWS", description="Desc", **promotion)
+        else:
+            promotions = Promotion.objects.all()
+            for promotion_to_update in promotions:
+                for promotion in consumed_message["result"]:
+                    if promotion_to_update.name == promotion["name"]:
+                        promotion_to_update.price = promotion["price"]
+                        promotion_to_update.save()
+                        DistributiveAutoOrderService.distribute(promotion_to_update)

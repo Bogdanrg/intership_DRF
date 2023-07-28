@@ -4,7 +4,7 @@ services:
   backend:
     build: .
     container_name: "DRF"
-    command: "python manage.py runserver 0.0.0.0:8000"
+    entrypoint: ["bash", "entrypoint.sh"]
     ports:
     - "8000:8000"
     volumes:
@@ -56,7 +56,7 @@ services:
     build:
       context: .
     container_name: 'queue'
-    command: "python consumer.py"
+    entrypoint: ["bash", "consumer-ep.sh"]
     depends_on:
       - backend
     restart: always

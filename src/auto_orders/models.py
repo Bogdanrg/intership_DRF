@@ -2,6 +2,7 @@ from django.conf import settings
 from django.db import models
 
 from src.base.classes import AbstractOrder
+from src.promotions.models import Promotion
 
 
 class AutoOrder(AbstractOrder):
@@ -13,6 +14,7 @@ class AutoOrder(AbstractOrder):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="auto_orders"
     )
+    promotion = models.ForeignKey(Promotion, on_delete=models.PROTECT, related_name='auto_orders')
 
     class Meta:
         constraints = [

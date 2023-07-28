@@ -8,7 +8,8 @@ from src.base.permissions import IsAdmin, IsAdminOrAnalyst, IsOwnerOrAdminOrAnal
 from .models import Order
 from .serializers import CreateOrderSerializer, OrderListSerializer, OrderSerializer
 from .services import OrderBuyService, OrderSellService
-
+from ..auto_orders.models import AutoOrder
+from ..auto_orders.serializers import AutoOrderListSerializer
 
 @method_decorator(transaction.atomic, name="create")
 class OrderCRUDViewSet(
@@ -29,8 +30,7 @@ class OrderCRUDViewSet(
     serializer_classes_by_action = {
         "retrieve": OrderSerializer,
         "create": CreateOrderSerializer,
-        "update": OrderSerializer,
-        "destroy": OrderSerializer,
+        "update": OrderSerializer
     }
     queryset = Order.objects.all().select_related("promotion")
 
@@ -73,12 +73,14 @@ class OrderCRUDViewSet(
 class UsersTransactionsViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     lookup_field = "pk"
     permission_classes = (IsAdminOrAnalyst,)
-    serializer_class = OrderListSerializer
 
-    def get_queryset(self):
-        return Order.objects.filter(user=self.kwargs.get("pk"))
+    def get_queryset(self) -> tuple:
+        order_queryset = Order.objects.filter(user=self.kwargs.get("pk"))
+        auto_order_queryset = AutoOrder.objects.filter(user=self.kwargs.get("pk"))
+        return order_queryset, auto_order_queryset
 
-    def retrieve(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        serializer = self.get_serializer(queryset, many=True)
-        return response.Response(serializer.data, status=status.HTTP_200_OK)
+    def retrieve(self, request, *args, **kwargs) -> response.Response:
+        tuple_queryset = self.get_queryset()
+        order_serializer = OrderListSerializer(tuple_queryset[0], many=True)
+        auto_order_serializer = AutoOrderListSerializer(tuple_queryset[1], many=True)
+        return response.Response(order_serializer.data + auto_order_serializer.data, status=status.HTTP_200_OK)

@@ -9,5 +9,65 @@ services:
     - "8000:8000"
     volumes:
       - .:/usr/src/app/
+    networks:
+      - trading
     env_file:
       - .env
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres
+    container_name: 'postgres_db'
+    volumes:
+      - trading:/var/lib/postgresql/data/
+    networks:
+      - trading
+    ports:
+      - "5433:5432"
+    env_file:
+      - .env
+
+  broker:
+    image: redis
+    container_name: "redis"
+    ports:
+      - "6379:6379"
+    networks:
+      - trading
+    restart: always
+    depends_on:
+      - backend
+
+  worker:
+    build: .
+    container_name: "celery"
+    entrypoint: ["bash", "celery-ep.sh"]
+    volumes:
+      - .:/usr/src/app/
+    networks:
+      - trading
+    env_file:
+      - .env
+    depends_on:
+      - broker
+
+  queue:
+    build:
+      context: .
+    container_name: 'queue'
+    entrypoint: ["bash", "consumer-ep.sh"]
+    depends_on:
+      - backend
+    restart: always
+    networks:
+      - trading
+
+
+volumes:
+  trading:
+    external: true
+
+networks:
+  trading:
+    external: true

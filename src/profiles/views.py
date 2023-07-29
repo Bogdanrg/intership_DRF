@@ -4,9 +4,9 @@ from rest_framework.viewsets import GenericViewSet
 from src.base.mixins import ActionPermissionMixin
 from src.base.permissions import IsAdmin, IsOwnerOrAdmin
 from src.promotions.models import Promotion
-from src.promotions.serializers import PromotionSerializer
+from src.promotions.serializers import PromotionListSerializer
 
-from .models import TradingUser
+from .models import PromotionUserSubscriptions, TradingUser
 from .serializers import UserProfileSerializer
 
 
@@ -25,17 +25,49 @@ class UserProfileViewSet(
 
 
 class SubscribeOnPromotionListViewSet(
-    GenericViewSet, mixins.CreateModelMixin, mixins.ListModelMixin
+    GenericViewSet,
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    mixins.DestroyModelMixin,
 ):
-    serializer_class = PromotionSerializer
+    serializer_class = PromotionListSerializer
     permission_classes = (permissions.IsAuthenticated,)
 
     def get_queryset(self):
-        return Promotion.objects.filter(id=self.request.user.subscription_id)
+        user = TradingUser.objects.prefetch_related("subscription").get(
+            id=self.request.user.id
+        )
+        promotion_ids = [i.promotion_id for i in user.subscriptions.all()]
+        return Promotion.objects.filter(id__in=promotion_ids)
 
-    def create(self, request, *args, **kwargs):
-        request.user.subscription_id = request.data.get("pk")
-        request.user.save()
+    def create(self, request, *args, **kwargs) -> response.Response:
+        try:
+            PromotionUserSubscriptions.objects.get(
+                user=request.user, promotion_id=request.data.get("pk")
+            )
+        except PromotionUserSubscriptions.DoesNotExist:
+            PromotionUserSubscriptions.objects.create(
+                user=request.user, promotion_id=request.data.get("pk")
+            )
+            return response.Response(
+                "You've been subscribed on promotion", status=status.HTTP_200_OK
+            )
         return response.Response(
-            "You've been subscribed on promotion", status=status.HTTP_200_OK
+            "You've been already subscribed on this promotion",
+            status=status.HTTP_200_OK,
+        )
+
+    def delete(self, request) -> response.Response:
+        try:
+            promotion_user_subscriptions_obj = PromotionUserSubscriptions.objects.get(
+                user=request.user, promotion_id=request.data.get("pk")
+            )
+            promotion_user_subscriptions_obj.delete()
+        except PromotionUserSubscriptions.DoesNotExist:
+            return response.Response(
+                "You've not been subscribed on this promotion",
+                status=status.HTTP_200_OK,
+            )
+        return response.Response(
+            "You've been unsubscribed from this promotion", status=status.HTTP_200_OK
         )

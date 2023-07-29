@@ -16,8 +16,10 @@ class TradingUser(AbstractUser):
     avatar = models.CharField(max_length=100, blank=True, null=True)
     balance = models.DecimalField(decimal_places=10, max_digits=20, default=0)
     date_joined = models.DateTimeField(auto_now_add=True)
-    role = EnumField(RoleEnum, default='default', blank=True)
-    subscription = models.ForeignKey(Promotion, on_delete=models.CASCADE, null=True)
+    role = EnumField(RoleEnum, default="default", blank=True)
+    subscription = models.ManyToManyField(
+        Promotion, through="PromotionUserSubscriptions"
+    )
 
     class Meta:
         constraints = [
@@ -26,3 +28,10 @@ class TradingUser(AbstractUser):
                 check=models.Q(balance__gte=0),
             ),
         ]
+
+
+class PromotionUserSubscriptions(models.Model):
+    promotion = models.ForeignKey(Promotion, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        TradingUser, on_delete=models.CASCADE, related_name="subscriptions"
+    )

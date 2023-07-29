@@ -19,8 +19,9 @@ class JWTAuthService:
     def check_credentials(data: dict) -> bool:
         serializer = UserCredentialsSerializer(data=data)
         serializer.is_valid(raise_exception=True)
-        user = TradingUser.objects.get(username=serializer.data.get("username"))
-        if not user:
+        try:
+            user = TradingUser.objects.get(username=serializer.data.get("username"))
+        except TradingUser.DoesNotExist:
             return False
         if check_password(serializer.data.get("password"), user.password):
             return True

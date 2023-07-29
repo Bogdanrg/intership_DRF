@@ -69,7 +69,7 @@ class AutoOrderBuyService:
 class DistributiveAutoOrderService:
     @staticmethod
     def distribute(promotion: Promotion) -> None:
-        auto_orders = promotion.auto_orders.all()
+        auto_orders = promotion.auto_orders.filter(status="pending")
         for auto_order in auto_orders:
             if auto_order.action == "purchase":
                 AutoOrderBuyService.check_auto_orders(auto_order)
@@ -116,7 +116,7 @@ class AutoOrderSaleService:
             )
         except PortfolioUserPromotion.DoesNotExist:
             return False
-        if portfolio_user_promotion_object.quanity < request.data["quantity"]:
+        if portfolio_user_promotion_object.quantity < request.data["quantity"]:
             return False
         return True
 

@@ -9,6 +9,8 @@ from rest_framework.request import Request
 
 from src.profiles.models import TradingUser
 
+# flake8: noqa
+
 load_dotenv()
 
 SECRET_KEY = os.getenv("JWT_SECRET_KEY")
@@ -60,6 +62,8 @@ class AuthMiddlewareService:
 
     @staticmethod
     def is_safe_path(request: Request) -> None | HttpResponse:
+        if request.user:
+            return None
         if (
             re.search(r"/admin\S+", request.path)
             or request.path in AUTH_PATHS

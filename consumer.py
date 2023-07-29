@@ -32,6 +32,6 @@ while True:
             for promotion_to_update in promotions:
                 for promotion in consumed_message["result"]:
                     if promotion_to_update.name == promotion["name"]:
-                        promotion_to_update.price = promotion["price"]
+                        promotion_to_update.price = float(promotion["price"])
                         promotion_to_update.save()
                         DistributiveAutoOrderService.distribute(promotion_to_update)

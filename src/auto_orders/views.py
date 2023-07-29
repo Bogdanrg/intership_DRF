@@ -1,12 +1,17 @@
 from rest_framework import permissions, response, status, viewsets
-from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, DestroyModelMixin
+from rest_framework.mixins import (
+    CreateModelMixin,
+    DestroyModelMixin,
+    RetrieveModelMixin,
+    UpdateModelMixin,
+)
 
 from src.base.mixins import ActionPermissionMixin, ActionSerializerMixin
-from .models import AutoOrder
-
-from .serializers import CreateAutoOrderSerializer, AutoOrderSerializer
-from .services import AutoOrderBuyService, AutoOrderSaleService
 from src.base.permissions import IsAdmin, IsOwnerOrAdminOrAnalyst
+
+from .models import AutoOrder
+from .serializers import AutoOrderSerializer, CreateAutoOrderSerializer
+from .services import AutoOrderBuyService, AutoOrderSaleService
 
 
 class AutoOrderViewSet(
@@ -16,7 +21,7 @@ class AutoOrderViewSet(
     CreateModelMixin,
     RetrieveModelMixin,
     UpdateModelMixin,
-    DestroyModelMixin
+    DestroyModelMixin,
 ):
     queryset = AutoOrder.objects.all().select_related("promotion")
 
@@ -24,12 +29,12 @@ class AutoOrderViewSet(
         "create": (permissions.IsAuthenticated,),
         "update": (IsAdmin,),
         "retrieve": (IsOwnerOrAdminOrAnalyst,),
-        "destroy": (IsAdmin,)
+        "destroy": (IsAdmin,),
     }
     serializer_classes_by_action = {
         "create": CreateAutoOrderSerializer,
         "update": AutoOrderSerializer,
-        "retrieve": AutoOrderSerializer
+        "retrieve": AutoOrderSerializer,
     }
 
     def create(self, request, *args, **kwargs) -> response.Response:
@@ -38,7 +43,7 @@ class AutoOrderViewSet(
             data = auto_order_service.create_order(request)
             if not data:
                 return response.Response(
-                    "You don't have enough promotions or something went wrong",
+                    "You don't have enough money or something went wrong",
                     status=status.HTTP_406_NOT_ACCEPTABLE,
                 )
             data = self.init_data(data)
@@ -48,7 +53,7 @@ class AutoOrderViewSet(
             data = auto_order_service.create_order(request)
             if not data:
                 return response.Response(
-                    "You don't have enough money or something went wrong",
+                    "You don't have enough promotions or something went wrong",
                     status=status.HTTP_406_NOT_ACCEPTABLE,
                 )
             data = self.init_data(data)

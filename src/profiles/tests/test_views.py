@@ -5,8 +5,8 @@ from src.profiles.models import PromotionUserSubscriptions, TradingUser
 from src.promotions.models import Promotion
 from src.promotions.serializers import PromotionListSerializer
 
-
 # flake8: noqa
+
 
 class UserProfileViewSetTestAuthenticatedTest(TestCase):
     @classmethod
@@ -82,7 +82,12 @@ class SubscribeOnPromotionListViewSetAuthenticatedTest(TestCase):
         Promotion.objects.create(
             avatar=f"AWS/ETH", name=f"ETH", price=1800.01, description=f"Desc"
         )
-        user = TradingUser.objects.get(username="artem")
         self.client.post("/api/v1/profiles/subscriptions/", data={"pk": 2})
         resp = self.client.get("/api/v1/profiles/subscriptions/")
         self.assertEquals(len(resp.data), 2)
+
+    def test_delete_subscription(self):
+        resp = self.client.delete("/api/v1/profiles/subscriptions/", data={"pk": 2})
+        self.assertEquals(resp.status_code, 200)
+        resp = self.client.get("/api/v1/profiles/subscriptions/")
+        self.assertEquals(len(resp.data), 1)

@@ -5,11 +5,12 @@ from rest_framework import mixins, permissions, response, status, viewsets
 from src.base.mixins import ActionPermissionMixin, ActionSerializerMixin
 from src.base.permissions import IsAdmin, IsAdminOrAnalyst, IsOwnerOrAdminOrAnalyst
 
+from ..auto_orders.models import AutoOrder
+from ..auto_orders.serializers import AutoOrderListSerializer
 from .models import Order
 from .serializers import CreateOrderSerializer, OrderListSerializer, OrderSerializer
 from .services import OrderBuyService, OrderSellService
-from ..auto_orders.models import AutoOrder
-from ..auto_orders.serializers import AutoOrderListSerializer
+
 
 @method_decorator(transaction.atomic, name="create")
 class OrderCRUDViewSet(
@@ -30,7 +31,7 @@ class OrderCRUDViewSet(
     serializer_classes_by_action = {
         "retrieve": OrderSerializer,
         "create": CreateOrderSerializer,
-        "update": OrderSerializer
+        "update": OrderSerializer,
     }
     queryset = Order.objects.all().select_related("promotion")
 
@@ -83,4 +84,7 @@ class UsersTransactionsViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixi
         tuple_queryset = self.get_queryset()
         order_serializer = OrderListSerializer(tuple_queryset[0], many=True)
         auto_order_serializer = AutoOrderListSerializer(tuple_queryset[1], many=True)
-        return response.Response(order_serializer.data + auto_order_serializer.data, status=status.HTTP_200_OK)
+        return response.Response(
+            order_serializer.data + auto_order_serializer.data,
+            status=status.HTTP_200_OK,
+        )

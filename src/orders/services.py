@@ -29,7 +29,7 @@ class OrderBuyService:
         return False
 
     def _is_affordable(self, request: Request) -> bool:
-        if request.data["quantity"] <= 0:
+        if int(request.data["quantity"]) <= 0:
             return False
         if self._user.balance >= (
             self._promotion.price * int(request.data["quantity"])
@@ -69,7 +69,7 @@ class OrderSellService:
             portfolio_user_promotion_obj = PortfolioUserPromotion.objects.get(
                 promotion=request.data["pk"], portfolio=portfolio
             )
-            if portfolio_user_promotion_obj.quantity < request.data["quantity"]:
+            if portfolio_user_promotion_obj.quantity < int(request.data["quantity"]):
                 return False
             return True
         except PortfolioUserPromotion.DoesNotExist:

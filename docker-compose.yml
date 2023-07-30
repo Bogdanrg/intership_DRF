@@ -56,10 +56,8 @@ services:
     build:
       context: .
     container_name: 'queue'
-    entrypoint: ["bash", "consumer-ep.sh"]
     depends_on:
       - backend
-    restart: always
     networks:
       - trading
 

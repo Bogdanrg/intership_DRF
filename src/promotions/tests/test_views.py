@@ -5,6 +5,8 @@ from src.profiles.models import TradingUser
 from src.promotions.models import Promotion
 from src.promotions.serializers import PromotionListSerializer, PromotionSerializer
 
+# flake8: noqa
+
 
 class PromotionListCRUDViewSetTest(TestCase):
     @classmethod

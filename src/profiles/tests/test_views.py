@@ -6,6 +6,8 @@ from src.promotions.models import Promotion
 from src.promotions.serializers import PromotionListSerializer
 
 
+# flake8: noqa
+
 class UserProfileViewSetTestAuthenticatedTest(TestCase):
     @classmethod
     def setUpTestData(cls):

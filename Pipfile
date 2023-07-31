@@ -17,6 +17,8 @@ celery = "*"
 redis = "*"
 kafka-python = "*"
 requests = "*"
+pytest = "*"
+pytest-django = "*"
 
 [dev-packages]
 

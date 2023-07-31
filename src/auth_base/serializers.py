@@ -3,10 +3,9 @@ from rest_framework import serializers
 from src.profiles.models import TradingUser
 
 
-class UserCredentialsSerializer(serializers.Serializer):
+class LoginUserSerializer(serializers.Serializer):
     username = serializers.CharField()
     password = serializers.CharField()
-    email = serializers.CharField(required=False)
 
 
 class JWTPairSerializer(serializers.Serializer):
@@ -15,6 +14,8 @@ class JWTPairSerializer(serializers.Serializer):
 
 
 class RegistrationUserSerializer(serializers.ModelSerializer):
+    repeat_password = serializers.CharField()
+
     class Meta:
         model = TradingUser
         fields = ("username", "password", "email")

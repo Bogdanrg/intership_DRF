@@ -52,10 +52,11 @@ services:
     depends_on:
       - broker
 
-  queue:
+  consumer:
     build:
       context: .
-    container_name: 'queue'
+    container_name: 'consumer'
+    entrypoint: ["bash", "consumer-ep.sh"]
     depends_on:
       - backend
     networks:

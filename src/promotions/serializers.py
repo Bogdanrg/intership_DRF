@@ -12,4 +12,4 @@ class PromotionListSerializer(serializers.ModelSerializer):
 class PromotionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Promotion
-        fields = "__all__"
+        fields = ("avatar", "name", "price", "description")

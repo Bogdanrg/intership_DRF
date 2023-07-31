@@ -16,7 +16,7 @@ class AutoOrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AutoOrder
-        fields = '__all__'
+        fields = ("id", "promotion", "user", "quantity", "status", "total_sum", "action", "closed_at", "direction")
 
 
 class AutoOrderListSerializer(serializers.ModelSerializer):

@@ -6,19 +6,20 @@ from rest_framework.request import Request
 from src.auto_orders.models import AutoOrder
 from src.portfolio.models import Portfolio, PortfolioUserPromotion
 from src.promotions.models import Promotion
+from decimal import Decimal
 
 
 class AutoOrderBuyService:
     @staticmethod
     def create_order(request: Request) -> dict | bool:
-        if AutoOrderBuyService._is_affordable(request):
+        if AutoOrderBuyService.is_affordable(request):
             data = {
                 "promotion": request.data["pk"],
                 "status": "pending",
                 "quantity": request.data["quantity"],
                 "action": "purchase",
                 "direction": request.data["direction"],
-                "total_sum": float(request.data["direction"])
+                "total_sum": Decimal(request.data["direction"])
                 * int(request.data["quantity"]),
             }
             return data
@@ -29,25 +30,25 @@ class AutoOrderBuyService:
         if auto_order.direction >= auto_order.promotion.price:
             auto_order.status = "completed successfully"
             auto_order.closed_at = datetime.datetime.now()
-            AutoOrderBuyService._reduce_user_balance(auto_order)
-            AutoOrderBuyService._update_portfolio(auto_order)
+            AutoOrderBuyService.reduce_user_balance(auto_order)
+            AutoOrderBuyService.update_portfolio(auto_order)
             auto_order.save()
 
     @staticmethod
-    def _is_affordable(request: Request) -> bool:
+    def is_affordable(request: Request) -> bool:
         if request.user.balance >= (
-            float(request.data["direction"]) * int(request.data["quantity"])
+            Decimal(request.data["direction"]) * int(request.data["quantity"])
         ):
             return True
         return False
 
     @staticmethod
-    def _reduce_user_balance(auto_order: AutoOrder) -> None:
+    def reduce_user_balance(auto_order: AutoOrder) -> None:
         auto_order.user.balance = F("balance") - auto_order.total_sum
         auto_order.user.save()
 
     @staticmethod
-    def _update_portfolio(auto_order: AutoOrder) -> None:
+    def update_portfolio(auto_order: AutoOrder) -> None:
         portfolio = Portfolio.objects.get(user=auto_order.user)
         try:
             portfolio_user_promotion_obj = PortfolioUserPromotion.objects.get(
@@ -83,32 +84,32 @@ class AutoOrderSaleService:
         if auto_order.direction <= auto_order.promotion.price:
             auto_order.status = "completed successfully"
             auto_order.closed_at = datetime.datetime.now()
-            AutoOrderSaleService._increase_user_balance(auto_order)
-            AutoOrderSaleService._update_portfolio(auto_order)
+            AutoOrderSaleService.increase_user_balance(auto_order)
+            AutoOrderSaleService.update_portfolio(auto_order)
             auto_order.save()
 
     @staticmethod
     def create_order(request: Request) -> dict | bool:
-        if AutoOrderSaleService._in_presence(request):
+        if AutoOrderSaleService.in_presence(request):
             data = {
                 "promotion": request.data["pk"],
                 "status": "pending",
                 "quantity": request.data["quantity"],
                 "action": "sale",
                 "direction": request.data["direction"],
-                "total_sum": float(request.data["direction"])
+                "total_sum": Decimal(request.data["direction"])
                 * int(request.data["quantity"]),
             }
             return data
         return False
 
     @staticmethod
-    def _increase_user_balance(auto_order: AutoOrder) -> None:
+    def increase_user_balance(auto_order: AutoOrder) -> None:
         auto_order.user.balance = F("balance") + auto_order.total_sum
         auto_order.user.save()
 
     @staticmethod
-    def _in_presence(request: Request) -> bool:
+    def in_presence(request: Request) -> bool:
         portfolio = Portfolio.objects.get(user=request.user)
         try:
             portfolio_user_promotion_object = PortfolioUserPromotion.objects.get(
@@ -121,7 +122,7 @@ class AutoOrderSaleService:
         return True
 
     @staticmethod
-    def _update_portfolio(auto_order: AutoOrder) -> None:
+    def update_portfolio(auto_order: AutoOrder) -> None:
         portfolio = Portfolio.objects.get(user=auto_order.user)
         portfolio_user_promotion_obj = PortfolioUserPromotion.objects.get(
             promotion=auto_order.promotion.pk, portfolio=portfolio

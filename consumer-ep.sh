@@ -1,3 +1,3 @@
 #!/bin/sh
-python consumer.py
+python src/consumer.py
 exec "$@"

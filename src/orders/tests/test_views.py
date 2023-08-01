@@ -1,58 +1,216 @@
-from django.forms import model_to_dict
-from django.test import TestCase
+import pytest
 from rest_framework.test import APIClient
 
 from src.orders.models import Order
-from src.portfolio.models import Portfolio
-from src.profiles.models import TradingUser
-from src.promotions.models import Promotion
-
-# flake8: noqa
+from src.portfolio.models import Portfolio, PortfolioUserPromotion
 
 
-class OrderCRUDViewSetTest(TestCase):
-    @classmethod
-    def setUpTestData(cls):
-        user = TradingUser.objects.create_user(
-            username="bogdan", password="zaqxswcdevfr", balance=3000
-        )
-        Portfolio.objects.create(user=user)
-        user = TradingUser.objects.create_user(
-            username="admin", password="zaqxswcdevfr", role="admin", balance=3000
-        )
-        Portfolio.objects.create(user=user)
-        user = TradingUser.objects.create_user(
-            username="analyst", password="zaqxswcdevfr", role="analyst", balance=3000
-        )
-        Portfolio.objects.create(user=user)
-        Promotion.objects.create(
-            avatar="AWS", name="BTC", price=2900.15, description="Desc"
-        )
-
-    def setUp(self) -> None:
+@pytest.mark.django_db
+class TestUserProfile:
+    def test_create_purchase_order_with_valid_data(self, default_user, promotion):
+        # Arrange
         self.client = APIClient()
+        data = {
+            "pk": promotion.pk,
+            "quantity": 1,
+            "action": "purchase",
+        }
+        Portfolio.objects.create(user=default_user)
+        # Act
+        self.client.force_login(default_user)
+        response = self.client.post("/api/v1/orders/", data)
+        # Assert
+        assert response.status_code == 200
+        assert set(response.data.keys()) == {
+            "id",
+            "promotion",
+            "status",
+            "total_sum",
+            "action",
+            "ordered_at",
+            "quantity",
+        }
 
-    def tearDown(self) -> None:
-        self.client.logout()
-
-    def test_create_order_purchase(self):
-        self.client.login(username="bogdan", password="zaqxswcdevfr")
-        resp = self.client.post(
-            "/api/v1/orders/", data={"action": "purchase", "pk": 1, "quantity": 1}
+    def test_create_sale_order_with_valid_data(self, default_user, promotion):
+        # Arrange
+        self.client = APIClient()
+        data = {
+            "pk": promotion.pk,
+            "quantity": 1,
+            "action": "sale",
+        }
+        portfolio = Portfolio.objects.create(user=default_user)
+        PortfolioUserPromotion.objects.create(
+            portfolio=portfolio, promotion=promotion, quantity=2
         )
-        self.assertEqual(resp.status_code, 200)
-        user = TradingUser.objects.get(username="bogdan")
-        order = Order.objects.get(user=user, action="purchase")
-        order_dict = model_to_dict(order)
-        self.assertEqual(order_dict["status"], "completed successfully")
+        # Act
+        self.client.force_login(default_user)
+        response = self.client.post("/api/v1/orders/", data)
+        # Assert
+        assert response.status_code == 200
+        assert set(response.data.keys()) == {
+            "id",
+            "promotion",
+            "status",
+            "total_sum",
+            "action",
+            "ordered_at",
+            "quantity",
+        }
 
-    def test_create_order_sale(self):
-        self.client.login(username="bogdan", password="zaqxswcdevfr")
-        resp = self.client.post(
-            "/api/v1/orders/", data={"action": "sale", "pk": 1, "quantity": 1}
+    def test_retrieve_order_as_admin(self, admin_user, promotion):
+        # Arrange
+        self.client = APIClient()
+        order = Order.objects.create(
+            action="sale",
+            promotion=promotion,
+            total_sum=500,
+            quantity=2,
+            user=admin_user,
         )
-        self.assertEqual(resp.status_code, 200)
-        user = TradingUser.objects.get(username="bogdan")
-        order = Order.objects.get(user=user, action="sale")
-        order_dict = model_to_dict(order)
-        self.assertEqual(order_dict["status"], "completed successfully")
+        # Act
+        self.client.force_login(admin_user)
+        print(promotion.pk)
+        response = self.client.get(f"/api/v1/orders/{order.pk}/")
+        # Assert
+        assert response.status_code == 200
+        assert set(response.data.keys()) == {
+            "id",
+            "promotion",
+            "user",
+            "status",
+            "total_sum",
+            "action",
+        }
+
+    def test_retrieve_order_as_analyst(self, analyst_user, promotion):
+        # Arrange
+        self.client = APIClient()
+        order = Order.objects.create(
+            action="sale",
+            promotion=promotion,
+            total_sum=500,
+            quantity=2,
+            user=analyst_user,
+        )
+        # Act
+        self.client.force_login(analyst_user)
+        response = self.client.get(f"/api/v1/orders/{order.pk}/")
+        # Assert
+        assert response.status_code == 200
+        assert set(response.data.keys()) == {
+            "id",
+            "promotion",
+            "user",
+            "status",
+            "total_sum",
+            "action",
+        }
+
+    def test_update_order_as_admin(self, admin_user, promotion):
+        # Arrange
+        self.client = APIClient()
+        data = {
+            "pk": promotion.pk,
+            "total_sum": 100,
+            "status": "pending",
+            "quantity": 1,
+            "action": "purchase",
+        }
+        order = Order.objects.create(
+            action="sale",
+            promotion=promotion,
+            total_sum=500,
+            quantity=2,
+            user=admin_user,
+        )
+        # Act
+        self.client.force_login(admin_user)
+        response = self.client.put(f"/api/v1/orders/{order.pk}/", data)
+        # Assert
+        assert response.status_code == 200
+        assert set(response.data.keys()) == {
+            "id",
+            "promotion",
+            "user",
+            "status",
+            "total_sum",
+            "action",
+        }
+
+    def test_update_order_as_analyst(self, analyst_user):
+        # Arrange
+        self.client = APIClient()
+        data = {
+            "pk": 1,
+            "total_sum": 100,
+            "status": "pending",
+            "quantity": 1,
+            "action": "purchase",
+        }
+        # Act
+        self.client.force_login(analyst_user)
+        response = self.client.put("/api/v1/orders/1/", data)
+        # Assert
+        assert response.status_code == 403
+
+    def test_create_purchase_order_with_insufficient_funds(
+        self, default_user, promotion
+    ):
+        # Arrange
+        self.client = APIClient()
+        data = {
+            "pk": promotion.pk,
+            "quantity": 10,
+            "action": "purchase",
+        }
+        # Act
+        self.client.force_login(default_user)
+        response = self.client.post("/api/v1/orders/", data)
+        # Assert
+        assert response.status_code == 406
+
+    def test_create_sale_order_with_insufficient_promotions(
+        self, default_user, promotion
+    ):
+        # Arrange
+        self.client = APIClient()
+        data = {
+            "pk": promotion.pk,
+            "quantity": 1000000,
+            "action": "sale",
+        }
+        portfolio = Portfolio.objects.create(user=default_user)
+        PortfolioUserPromotion.objects.create(
+            portfolio=portfolio, promotion=promotion, quantity=1
+        )
+        # Act
+        self.client.force_login(default_user)
+        response = self.client.post("/api/v1/orders/", data)
+        # Assert
+        assert response.status_code == 406
+
+    def test_delete_as_default(self, default_user):
+        # Arrange
+        self.client = APIClient()
+        # Act
+        self.client.force_login(default_user)
+        response = self.client.delete("/api/v1/orders/1/")
+        # Assert
+        assert response.status_code == 403
+
+    def test_delete_as_admin(self, admin_user, promotion):
+        # Arrange
+        self.client = APIClient()
+        order = Order.objects.create(
+            action="sale",
+            promotion=promotion,
+            total_sum=500,
+            quantity=2,
+            user=admin_user,
+        )
+        # Act
+        self.client.force_login(admin_user)
+        response = self.client.delete(f"/api/v1/orders/{order.pk}/")
+        # Assert
+        assert response.status_code == 204

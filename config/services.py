@@ -1,29 +1,19 @@
 import json
-import os
 import re
 
 import jwt
 from django.http import HttpResponse
-from dotenv import load_dotenv
 from rest_framework.request import Request
 
+import constants
 from src.profiles.models import TradingUser
 
+SECRET_KEY = constants.JWT_SECRET_KEY
+
+AUTH_PATHS = constants.AUTH_PATHS
+
+
 # flake8: noqa
-
-load_dotenv()
-
-SECRET_KEY = os.getenv("JWT_SECRET_KEY")
-
-AUTH_PATHS = [
-    "/api/auth-custom/",
-    "/api/auth-custom/registration/",
-    "/api/auth-custom/refresh/",
-    "/api/auth-custom/password_reset/",
-    "/api/auth-custom/password_reset/confirm/",
-]
-
-
 class AuthMiddlewareService:
     @staticmethod
     def create_response(code: int, message: dict) -> dict:

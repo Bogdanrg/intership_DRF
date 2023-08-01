@@ -54,7 +54,7 @@ class SubscribeOnPromotionListViewSet(
             )
         return response.Response(
             "You've been already subscribed on this promotion",
-            status=status.HTTP_200_OK,
+            status=status.HTTP_406_NOT_ACCEPTABLE,
         )
 
     def delete(self, request) -> response.Response:
@@ -66,7 +66,7 @@ class SubscribeOnPromotionListViewSet(
         except PromotionUserSubscriptions.DoesNotExist:
             return response.Response(
                 "You've not been subscribed on this promotion",
-                status=status.HTTP_200_OK,
+                status=status.HTTP_406_NOT_ACCEPTABLE,
             )
         return response.Response(
             "You've been unsubscribed from this promotion", status=status.HTTP_200_OK

@@ -15,6 +15,7 @@ class IsAdminOrAnalyst(permissions.BasePermission):
     def has_permission(self, request: Request, view: APIView) -> bool:
         if bool(request.user and request.user.is_authenticated):
             return bool(request.user.role == "admin" or request.user.role == "analyst")
+        return False
 
 
 class IsOwnerOrAdminOrAnalyst(permissions.BasePermission):

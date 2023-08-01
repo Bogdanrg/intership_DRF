@@ -101,8 +101,10 @@ class OrderSellService:
         portfolio_user_promotion_obj = PortfolioUserPromotion.objects.get(
             promotion=self._promotion.pk, portfolio=portfolio
         )
-        if portfolio_user_promotion_obj.quantity - data["quantity"] == 0:
+        if portfolio_user_promotion_obj.quantity - int(data["quantity"]) == 0:
             portfolio_user_promotion_obj.delete()
         else:
-            portfolio_user_promotion_obj.quantity = F("quantity") - data["quantity"]
+            portfolio_user_promotion_obj.quantity = F("quantity") - int(
+                data["quantity"]
+            )
             portfolio_user_promotion_obj.save()

@@ -28,7 +28,7 @@ def analyst_user() -> TradingUser:
         username="Test user",
         email="testuseremail@email.com",
         password="testuserpassword123",
-        role="analyst"
+        role="analyst",
     )
     yield user
     del user
@@ -40,7 +40,23 @@ def admin_user() -> TradingUser:
         username="Test user",
         email="testuseremail@email.com",
         password="testuserpassword123",
-        role="admin"
+        role="admin",
     )
     yield user
     del user
+
+
+@pytest.fixture
+def another_default_user() -> TradingUser:
+    user = TradingUser.objects.create_user(
+        username="Test User 2", password="testpassword2", email="testemail@gmail.com"
+    )
+    yield user
+    del user
+
+
+@pytest.fixture
+def another_promotion() -> Promotion:
+    promotion = Promotion.objects.create(avatar="AWS", name="ETH", price=2900.01)
+    yield promotion
+    del promotion

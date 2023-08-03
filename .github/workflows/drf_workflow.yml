@@ -1,0 +1,37 @@
+name: DRF workflow
+
+on:
+  push:
+    branches:
+      - master
+      - dev
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  testing:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Create env file
+        run: |
+          echo "${{ secrets.DRF_SECRETS }}" > .env
+      - name: Build Docker container
+        run: |
+          docker network create trading
+          docker volume create trading
+          docker-compose up backend -d --build
+      - name: Run tests
+        run: docker-compose exec -T backend pytest
+      - name: Install pipenv
+        run: |
+            sudo apt install python3
+            pip install pipenv
+            pipenv install --system --deploy --ignore-pipfile
+      - name: Run linters
+        run: |
+          pipenv run pre-commit install
+          pipenv run pre-commit run --all-files
+      - name: Stop Containers
+        if: always()
+        run: docker-compose down

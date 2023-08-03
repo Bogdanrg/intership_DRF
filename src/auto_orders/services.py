@@ -19,8 +19,6 @@ class AutoOrderBuyService:
                 "quantity": request.data["quantity"],
                 "action": "purchase",
                 "direction": request.data["direction"],
-                "total_sum": Decimal(request.data["direction"])
-                * int(request.data["quantity"]),
             }
             return data
         return False
@@ -44,7 +42,10 @@ class AutoOrderBuyService:
 
     @staticmethod
     def reduce_user_balance(auto_order: AutoOrder) -> None:
-        auto_order.user.balance = F("balance") - auto_order.total_sum
+        total_sum = auto_order.quantity * auto_order.promotion.price
+        auto_order.user.balance = F("balance") - total_sum
+        auto_order.total_sum = total_sum
+        auto_order.save()
         auto_order.user.save()
 
     @staticmethod
@@ -97,15 +98,16 @@ class AutoOrderSaleService:
                 "quantity": request.data["quantity"],
                 "action": "sale",
                 "direction": request.data["direction"],
-                "total_sum": Decimal(request.data["direction"])
-                * int(request.data["quantity"]),
             }
             return data
         return False
 
     @staticmethod
     def increase_user_balance(auto_order: AutoOrder) -> None:
-        auto_order.user.balance = F("balance") + auto_order.total_sum
+        total_sum = auto_order.quantity * auto_order.promotion.price
+        auto_order.user.balance = F("balance") + total_sum
+        auto_order.total_sum = total_sum
+        auto_order.save()
         auto_order.user.save()
 
     @staticmethod

@@ -13,6 +13,7 @@ repos:
     hooks:
       - id: flake8
         language_version: python3
+        exclude: consumer.py
         args:
           [
              --max-line-length=93

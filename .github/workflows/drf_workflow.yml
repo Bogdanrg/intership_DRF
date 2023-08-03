@@ -21,7 +21,7 @@ jobs:
         run: |
           docker network create trading
           docker volume create trading
-          docker-compose up backend -d --build
+          docker-compose up -d --build
       - name: Run tests
         run: docker-compose exec -T backend pytest
       - name: Install pipenv

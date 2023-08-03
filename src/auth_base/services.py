@@ -2,12 +2,11 @@ import datetime
 
 import jwt
 from django.contrib.auth.hashers import check_password
-import constants
 
+import constants
 from src.profiles.models import TradingUser
 
 from .serializers import JWTPairSerializer, LoginUserSerializer
-
 
 JWT_SECRET_KEY = constants.JWT_SECRET_KEY
 
@@ -80,7 +79,9 @@ class JWTAuthService:
             serializer = JWTPairSerializer(data=data)
             serializer.is_valid(raise_exception=True)
             return jwt.decode(
-                serializer.data.get("refresh_token"), JWT_SECRET_KEY, algorithms=["HS256"]
+                serializer.data.get("refresh_token"),
+                JWT_SECRET_KEY,
+                algorithms=["HS256"],
             )
         except jwt.ExpiredSignatureError:
             return False

@@ -14,7 +14,9 @@ class AutoOrder(AbstractOrder):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="auto_orders"
     )
-    promotion = models.ForeignKey(Promotion, on_delete=models.PROTECT, related_name='auto_orders')
+    promotion = models.ForeignKey(
+        Promotion, on_delete=models.PROTECT, related_name="auto_orders"
+    )
 
     class Meta:
         constraints = [

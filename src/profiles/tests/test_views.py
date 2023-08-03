@@ -13,8 +13,10 @@ class TestUserProfile:
         self.client = APIClient()
         # Act
         self.client.force_login(default_user)
-        response = self.client.get("/api/v1/profiles/profile/1/")
-        response_another_profile = self.client.get("/api/v1/profiles/profile/2/")
+        response = self.client.get(f"/api/v1/profiles/profile/{default_user.id}/")
+        response_another_profile = self.client.get(
+            f"/api/v1/profiles/profile/{another_default_user.id}/"
+        )
         # Assert
         assert response.status_code == 200
         assert response_another_profile.status_code == 403
@@ -24,8 +26,10 @@ class TestUserProfile:
         self.client = APIClient()
         # Act
         self.client.force_login(admin_user)
-        response = self.client.get("/api/v1/profiles/profile/3/")
-        response_another_profile = self.client.get("/api/v1/profiles/profile/4/")
+        response = self.client.get(f"/api/v1/profiles/profile/{admin_user.id}/")
+        response_another_profile = self.client.get(
+            f"/api/v1/profiles/profile/{another_default_user.id}/"
+        )
         # Assert
         assert response.status_code == 200
         assert response_another_profile.status_code == 200
@@ -35,7 +39,9 @@ class TestUserProfile:
         self.client = APIClient()
         # Act
         self.client.force_login(admin_user)
-        response = self.client.put("/api/v1/profiles/profile/6/", {"balance": 2000})
+        response = self.client.put(
+            f"/api/v1/profiles/profile/{another_default_user.id}/", {"balance": 2000}
+        )
         # Assert
         assert Decimal(response.data.get("balance")) == 2000
         assert response.status_code == 200
@@ -45,7 +51,9 @@ class TestUserProfile:
         self.client = APIClient()
         # Act
         self.client.force_login(default_user)
-        response = self.client.put("/api/v1/profiles/profile/7/", {"balance": 2000})
+        response = self.client.put(
+            f"/api/v1/profiles/profile/{default_user.id}/", {"balance": 2000}
+        )
         # Assert
         assert response.status_code == 403
 
@@ -76,7 +84,9 @@ class TestSubscriptions:
         )
         # Act
         self.client.force_login(default_user)
-        response = self.client.delete("/api/v1/profiles/subscriptions/", {"pk": 2})
+        response = self.client.delete(
+            "/api/v1/profiles/subscriptions/", {"pk": promotion.id}
+        )
         list_response = self.client.get("/api/v1/profiles/subscriptions/")
         # Assert
         assert response.status_code == 200
@@ -99,7 +109,9 @@ class TestSubscriptions:
         self.client = APIClient()
         # Act
         self.client.force_login(default_user)
-        response = self.client.post("/api/v1/profiles/subscriptions/", {"pk": 4})
+        response = self.client.post(
+            "/api/v1/profiles/subscriptions/", {"pk": promotion.id}
+        )
         # Assert
         assert response.status_code == 406
 
@@ -108,7 +120,9 @@ class TestSubscriptions:
         self.client = APIClient()
         # Act
         self.client.force_login(default_user)
-        response = self.client.post("/api/v1/profiles/subscriptions/", {"pk": 5})
+        response = self.client.post(
+            "/api/v1/profiles/subscriptions/", {"pk": promotion.id}
+        )
         list_response = self.client.get("/api/v1/profiles/subscriptions/")
         # Assert
         assert response.status_code == 200

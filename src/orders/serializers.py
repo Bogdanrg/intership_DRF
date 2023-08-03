@@ -1,18 +1,19 @@
 from rest_framework import serializers
+
 from .models import Order
 
 
 class OrderListSerializer(serializers.ModelSerializer):
-    promotion = serializers.ReadOnlyField(source='promotion.name')
+    promotion = serializers.ReadOnlyField(source="promotion.name")
 
     class Meta:
         model = Order
-        exclude = ('user',)
+        exclude = ("user",)
 
 
 class OrderSerializer(serializers.ModelSerializer):
-    promotion = serializers.ReadOnlyField(source='promotion.name')
-    user = serializers.ReadOnlyField(source='user.username')
+    promotion = serializers.ReadOnlyField(source="promotion.name")
+    user = serializers.ReadOnlyField(source="user.username")
 
     class Meta:
         model = Order
@@ -22,4 +23,4 @@ class OrderSerializer(serializers.ModelSerializer):
 class CreateOrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
-        exclude = ('user',)
+        exclude = ("user",)

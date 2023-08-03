@@ -43,9 +43,13 @@ class RegistrationUserAPIView(APIView):
     def post(self, request: Request) -> response.Response:
         serializer = RegistrationUserSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = serializer.save()
-        email = serializer.data.get("email")
-        send_notification_mail.delay(email, user.username)
+        user = TradingUser.objects.create_user(
+            username=serializer.data.get("username"),
+            password=serializer.data.get("password"),
+            email=serializer.data.get("email"),
+            is_active=False,
+        )
+        send_notification_mail.delay(user.email, user.username)
         return response.Response("Verify your email", status=status.HTTP_200_OK)
 
 
@@ -79,7 +83,9 @@ class ChangePasswordViewSet(viewsets.GenericViewSet, mixins.UpdateModelMixin):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         if not user.check_password(serializer.data.get("old_password")):
-            return response.Response("Wrong old password")
+            return response.Response(
+                "Wrong old password", status=status.HTTP_400_BAD_REQUEST
+            )
         user.set_password(serializer.data.get("new_password"))
         user.save()
         return response.Response("Password has been changed", status=status.HTTP_200_OK)
@@ -91,7 +97,12 @@ class ResetPasswordAPIView(generics.GenericAPIView):
     def post(self, request: Request) -> response.Response:
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = TradingUser.objects.get(username=serializer.data.get("username"))
+        try:
+            user = TradingUser.objects.get(username=serializer.data.get("username"))
+        except TradingUser.DoesNotExist:
+            return response.Response(
+                "Invalid username", status=status.HTTP_400_BAD_REQUEST
+            )
         token = Token.objects.create(user=user)
         send_change_password_mail.delay(
             serializer.data.get("email"),

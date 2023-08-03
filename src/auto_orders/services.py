@@ -1,12 +1,12 @@
-import datetime
+from decimal import Decimal
 
 from django.db.models import F
+from django.utils import timezone
 from rest_framework.request import Request
 
 from src.auto_orders.models import AutoOrder
 from src.portfolio.models import Portfolio, PortfolioUserPromotion
 from src.promotions.models import Promotion
-from decimal import Decimal
 
 
 class AutoOrderBuyService:
@@ -29,7 +29,7 @@ class AutoOrderBuyService:
     def check_auto_orders(auto_order: AutoOrder) -> None:
         if auto_order.direction >= auto_order.promotion.price:
             auto_order.status = "completed successfully"
-            auto_order.closed_at = datetime.datetime.now()
+            auto_order.closed_at = timezone.now()
             AutoOrderBuyService.reduce_user_balance(auto_order)
             AutoOrderBuyService.update_portfolio(auto_order)
             auto_order.save()
@@ -83,7 +83,7 @@ class AutoOrderSaleService:
     def check_auto_orders(auto_order: AutoOrder) -> None:
         if auto_order.direction <= auto_order.promotion.price:
             auto_order.status = "completed successfully"
-            auto_order.closed_at = datetime.datetime.now()
+            auto_order.closed_at = timezone.now()
             AutoOrderSaleService.increase_user_balance(auto_order)
             AutoOrderSaleService.update_portfolio(auto_order)
             auto_order.save()
@@ -117,7 +117,7 @@ class AutoOrderSaleService:
             )
         except PortfolioUserPromotion.DoesNotExist:
             return False
-        if portfolio_user_promotion_object.quantity < request.data["quantity"]:
+        if portfolio_user_promotion_object.quantity < int(request.data["quantity"]):
             return False
         return True
 

@@ -1,7 +1,5 @@
 from rest_framework import serializers
 
-from src.profiles.models import TradingUser
-
 
 class LoginUserSerializer(serializers.Serializer):
     username = serializers.CharField()
@@ -13,18 +11,16 @@ class JWTPairSerializer(serializers.Serializer):
     refresh_token = serializers.CharField()
 
 
-class RegistrationUserSerializer(serializers.ModelSerializer):
+class RegistrationUserSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    password = serializers.CharField()
     repeat_password = serializers.CharField()
+    email = serializers.CharField()
 
-    class Meta:
-        model = TradingUser
-        fields = ("username", "password", "email")
-
-    def create(self, validated_data: dict) -> TradingUser:
-        new_user = TradingUser.objects.create_user(**validated_data)
-        new_user.is_active = False
-        new_user.save()
-        return new_user
+    def validate(self, data) -> dict:
+        if not data["password"] == data["repeat_password"]:
+            raise serializers.ValidationError("Password missmatch")
+        return data
 
 
 class ChangePasswordSerializer(serializers.Serializer):

@@ -4,16 +4,20 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('promotions', '0001_initial'),
-        ('portfolio', '0002_initial'),
+        ("promotions", "0001_initial"),
+        ("portfolio", "0002_initial"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='portfolio',
-            name='promotions',
-            field=models.ManyToManyField(blank=True, null=True, through='portfolio.PortfolioUserPromotion', to='promotions.promotion'),
+            model_name="portfolio",
+            name="promotions",
+            field=models.ManyToManyField(
+                blank=True,
+                null=True,
+                through="portfolio.PortfolioUserPromotion",
+                to="promotions.promotion",
+            ),
         ),
     ]

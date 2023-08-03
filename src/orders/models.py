@@ -5,9 +5,9 @@ from src.base.classes import AbstractOrder
 
 
 class Order(AbstractOrder):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL,
-                             on_delete=models.PROTECT,
-                             related_name='orders')
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="orders"
+    )
 
     class Meta:
         constraints = [

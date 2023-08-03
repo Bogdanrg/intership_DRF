@@ -6,9 +6,9 @@ from src.promotions.models import Promotion
 
 class Portfolio(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    promotions = models.ManyToManyField(Promotion,
-                                        through="PortfolioUserPromotion",
-                                        blank=True)
+    promotions = models.ManyToManyField(
+        Promotion, through="PortfolioUserPromotion", blank=True
+    )
 
 
 class PortfolioUserPromotion(models.Model):

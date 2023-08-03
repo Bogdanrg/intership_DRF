@@ -9,7 +9,7 @@ class TestPromotion:
         self.client = APIClient()
         # Act
         self.client.force_login(default_user)
-        response = self.client.get("/api/v1/promotions/1/")
+        response = self.client.get(f"/api/v1/promotions/{promotion.id}/")
         # Assert
         assert response.status_code == 200
         assert set(response.data.keys()) == {"avatar", "name", "price", "description"}
@@ -66,7 +66,8 @@ class TestPromotion:
         # Act
         self.client.force_login(admin_user)
         response = self.client.put(
-            "/api/v1/promotions/3/", {"avatar": "AWS", "name": "BTC", "price": 2900.01}
+            f"/api/v1/promotions/{promotion.id}/",
+            {"avatar": "AWS", "name": "BTC", "price": 2900.01},
         )
         # Assert
         assert response.status_code == 200
@@ -88,7 +89,7 @@ class TestPromotion:
 
         # Act
         self.client.force_login(admin_user)
-        response = self.client.delete("/api/v1/promotions/5/")
+        response = self.client.delete(f"/api/v1/promotions/{promotion.id}/")
         deleted_response = self.client.get("/api/v1/promotions/5/")
         # Assert
         assert response.status_code == 204

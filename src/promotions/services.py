@@ -1,10 +1,11 @@
-from .models import Promotion
 from decimal import Decimal
+
 from src.auto_orders.services import DistributiveAutoOrderService
+
+from .models import Promotion
 
 
 class PromotionService:
-
     @staticmethod
     def promotion_pull(promotions: list) -> None:
         for promotion in promotions:

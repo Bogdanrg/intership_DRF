@@ -14,7 +14,6 @@ class TestPortfolio:
             portfolio=portfolio, promotion=promotion, quantity=2
         )
         # Act
-
         self.client.force_authenticate(default_user)
         response = self.client.get("/api/v1/portfolio/")
         # Assert
@@ -54,7 +53,7 @@ class TestAnyUserPortfolio:
         self.client = APIClient()
         # Act
         self.client.force_authenticate(analyst_user)
-        response = self.client.get("/api/v1/portfolio/2/")
+        response = self.client.get(f"/api/v1/portfolio/{analyst_user.id}/")
         # Assert
         assert response.status_code == 200
         assert response.data[0]["quantity"] == 2
@@ -68,7 +67,7 @@ class TestAnyUserPortfolio:
         self.client = APIClient()
         # Act
         self.client.force_authenticate(admin_user)
-        response = self.client.get("/api/v1/portfolio/3/")
+        response = self.client.get(f"/api/v1/portfolio/{admin_user.id}/")
         # Assert
         assert response.status_code == 200
         assert response.data[0]["quantity"] == 2

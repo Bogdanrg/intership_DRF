@@ -4,21 +4,27 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Promotion',
+            name="Promotion",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('avatar', models.CharField(blank=True, max_length=100, null=True)),
-                ('name', models.CharField(max_length=30)),
-                ('price', models.DecimalField(decimal_places=10, max_digits=20)),
-                ('description', models.TextField(default='The most beneficial asset')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("avatar", models.CharField(blank=True, max_length=100, null=True)),
+                ("name", models.CharField(max_length=30)),
+                ("price", models.DecimalField(decimal_places=10, max_digits=20)),
+                ("description", models.TextField(default="The most beneficial asset")),
             ],
         ),
     ]

@@ -2,8 +2,8 @@ from typing import Literal
 
 from django.db import transaction
 from django.utils.decorators import method_decorator
-from requests import Request
 from rest_framework import mixins, permissions, response, status, viewsets
+from rest_framework.request import Request
 from rest_framework.serializers import Serializer
 
 from src.base.mixins import ActionPermissionMixin, ActionSerializerMixin
@@ -39,7 +39,13 @@ class OrderCRUDViewSet(
     }
     queryset = Order.objects.all().select_related("promotion")
 
-    def create(self, request, *args, **kwargs) -> response.Response:
+    def create(
+        self, request: Request, *args: tuple, **kwargs: dict
+    ) -> response.Response:
+        if not request.data.get("pk"):
+            return response.Response(
+                "Promotion wasn't provided", status=status.HTTP_400_BAD_REQUEST
+            )
         if request.data.get("action") == "purchase":
             order_service = OrderBuyService()
             data = order_service.create_order(request)
@@ -84,7 +90,9 @@ class UsersTransactionsViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixi
         auto_order_queryset = AutoOrder.objects.filter(user=self.kwargs.get("pk"))
         return order_queryset, auto_order_queryset
 
-    def retrieve(self, request: Request, *args: tuple, **kwargs: dict) -> response.Response:
+    def retrieve(
+        self, request: Request, *args: tuple, **kwargs: dict
+    ) -> response.Response:
         tuple_queryset = self.get_queryset()
         order_serializer = OrderListSerializer(tuple_queryset[0], many=True)
         auto_order_serializer = AutoOrderListSerializer(tuple_queryset[1], many=True)

@@ -12,7 +12,9 @@ class OrderBuyService:
         self._promotion = None
 
     def create_order(self, request: Request) -> dict | bool:
-        self._promotion = Promotion.objects.get(pk=request.data.get("pk", 1))
+        self._promotion = Promotion.objects.get(pk=request.data.get("pk"))
+        if not self._promotion:
+            return False
         self._user = TradingUser.objects.get(pk=request.user.id)
         data = {
             "promotion": self._promotion.pk,
@@ -76,7 +78,9 @@ class OrderSellService:
             return False
 
     def create_order(self, request: Request) -> dict | bool:
-        self._promotion = Promotion.objects.get(pk=request.data.get("pk", 1))
+        self._promotion = Promotion.objects.get(pk=request.data.get("pk"))
+        if not self._promotion:
+            return False
         self._user = TradingUser.objects.get(pk=request.user.id)
         data = {
             "promotion": self._promotion.pk,

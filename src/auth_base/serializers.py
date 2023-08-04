@@ -17,7 +17,7 @@ class RegistrationUserSerializer(serializers.Serializer):
     repeat_password = serializers.CharField()
     email = serializers.CharField()
 
-    def validate(self, data) -> dict:
+    def validate(self, data: dict) -> dict:
         if not data["password"] == data["repeat_password"]:
             raise serializers.ValidationError("Password missmatch")
         return data

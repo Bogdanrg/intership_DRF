@@ -17,7 +17,9 @@ AUTH_PATHS = constants.AUTH_PATHS
 # flake8: noqa
 class AuthMiddlewareService:
     @staticmethod
-    def create_response(code: int, message: dict) -> dict[str, dict | int] | tuple[str, Exception]:
+    def create_response(
+        code: int, message: dict
+    ) -> dict[str, object] | tuple[str, Exception]:
         try:
             data = {"data": message, "code": int(code)}
             return data

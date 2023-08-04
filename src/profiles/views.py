@@ -1,3 +1,4 @@
+from django.db.models import QuerySet
 from rest_framework import mixins, permissions, response, status
 from rest_framework.request import Request
 from rest_framework.viewsets import GenericViewSet
@@ -9,7 +10,6 @@ from src.promotions.serializers import PromotionListSerializer
 
 from .models import PromotionUserSubscriptions, TradingUser
 from .serializers import UserProfileSerializer
-from django.db.models import QuerySet
 
 
 class UserProfileViewSet(
@@ -42,7 +42,9 @@ class SubscribeOnPromotionListViewSet(
         promotion_ids = [i.promotion_id for i in user.subscriptions.all()]
         return Promotion.objects.filter(id__in=promotion_ids)
 
-    def create(self, request: Request, *args: tuple, **kwargs: dict) -> response.Response:
+    def create(
+        self, request: Request, *args: tuple, **kwargs: dict
+    ) -> response.Response:
         try:
             PromotionUserSubscriptions.objects.get(
                 user=request.user, promotion_id=request.data.get("pk")

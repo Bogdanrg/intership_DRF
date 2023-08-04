@@ -1,13 +1,13 @@
 from typing import Literal
 
 from rest_framework import permissions, response, status, viewsets
-from rest_framework.request import Request
 from rest_framework.mixins import (
     CreateModelMixin,
     DestroyModelMixin,
     RetrieveModelMixin,
     UpdateModelMixin,
 )
+from rest_framework.request import Request
 from rest_framework.serializers import Serializer
 
 from src.base.mixins import ActionPermissionMixin, ActionSerializerMixin
@@ -41,10 +41,12 @@ class AutoOrderViewSet(
         "retrieve": AutoOrderSerializer,
     }
 
-    def create(self, request: Request, *args: tuple, **kwargs: dict) -> response.Response:
+    def create(
+        self, request: Request, *args: tuple, **kwargs: dict
+    ) -> response.Response:
         if request.data.get("action") == "purchase":
-            auto_order_service = AutoOrderBuyService()
-            data = auto_order_service.create_order(request)
+            auto_order_service_buy = AutoOrderBuyService()
+            data = auto_order_service_buy.create_order(request)
             if not data:
                 return response.Response(
                     "You don't have enough money or something went wrong",
@@ -53,8 +55,8 @@ class AutoOrderViewSet(
             data = self.init_data(data)
             return response.Response(data, status=status.HTTP_200_OK)
         if request.data.get("action") == "sale":
-            auto_order_service = AutoOrderSaleService()
-            data = auto_order_service.create_order(request)
+            auto_order_service_sale = AutoOrderSaleService()
+            data = auto_order_service_sale.create_order(request)
             if not data:
                 return response.Response(
                     "You don't have enough promotions or something went wrong",

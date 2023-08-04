@@ -41,7 +41,7 @@ repos:
     rev: ''
     hooks:
       - id: mypy
-        exclude: tests
+        exclude: tests|conftest
         args:
           [
               --disallow-untyped-defs,

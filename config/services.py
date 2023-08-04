@@ -1,5 +1,6 @@
 import json
 import re
+from typing import Dict, Tuple
 
 import jwt
 from django.http import HttpResponse
@@ -16,15 +17,15 @@ AUTH_PATHS = constants.AUTH_PATHS
 # flake8: noqa
 class AuthMiddlewareService:
     @staticmethod
-    def create_response(code: int, message: dict) -> dict:
+    def create_response(code: int, message: dict) -> dict[str, dict | int] | tuple[str, Exception]:
         try:
             data = {"data": message, "code": int(code)}
             return data
         except Exception as creation_error:
-            print("Can't create response", creation_error)
+            return "Can't create response", creation_error
 
     @staticmethod
-    def authenticate_user(request: Request, payload) -> None:
+    def authenticate_user(request: Request, payload: dict) -> None:
         username = payload["username"]
         request.user = TradingUser.objects.get(username=username)
         setattr(request, "_dont_enforce_csrf_checks", True)

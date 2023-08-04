@@ -4,8 +4,8 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-python-dotenv = "*"
 django = "*"
+python-dotenv = "*"
 flake8 = "*"
 django-enum = "*"
 pillow = "*"
@@ -23,4 +23,4 @@ pytest-django = "*"
 [dev-packages]
 
 [requires]
-python_version = "3"
+python_version = "3.11"

@@ -1,6 +1,10 @@
+from typing import Literal
+
 from django.db import transaction
 from django.utils.decorators import method_decorator
+from requests import Request
 from rest_framework import mixins, permissions, response, status, viewsets
+from rest_framework.serializers import Serializer
 
 from src.base.mixins import ActionPermissionMixin, ActionSerializerMixin
 from src.base.permissions import IsAdmin, IsAdminOrAnalyst, IsOwnerOrAdminOrAnalyst
@@ -61,10 +65,10 @@ class OrderCRUDViewSet(
                 "Not valid action", status=status.HTTP_406_NOT_ACCEPTABLE
             )
 
-    def perform_create(self, serializer) -> None:
+    def perform_create(self, serializer: Serializer) -> None:
         serializer.save(user=self.request.user)
 
-    def init_data(self, data: dict) -> dict:
+    def init_data(self, data: dict | Literal[True]) -> dict:
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
@@ -80,7 +84,7 @@ class UsersTransactionsViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixi
         auto_order_queryset = AutoOrder.objects.filter(user=self.kwargs.get("pk"))
         return order_queryset, auto_order_queryset
 
-    def retrieve(self, request, *args, **kwargs) -> response.Response:
+    def retrieve(self, request: Request, *args: tuple, **kwargs: dict) -> response.Response:
         tuple_queryset = self.get_queryset()
         order_serializer = OrderListSerializer(tuple_queryset[0], many=True)
         auto_order_serializer = AutoOrderListSerializer(tuple_queryset[1], many=True)

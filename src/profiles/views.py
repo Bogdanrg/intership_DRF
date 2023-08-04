@@ -1,4 +1,5 @@
 from rest_framework import mixins, permissions, response, status
+from rest_framework.request import Request
 from rest_framework.viewsets import GenericViewSet
 
 from src.base.mixins import ActionPermissionMixin
@@ -8,6 +9,7 @@ from src.promotions.serializers import PromotionListSerializer
 
 from .models import PromotionUserSubscriptions, TradingUser
 from .serializers import UserProfileSerializer
+from django.db.models import QuerySet
 
 
 class UserProfileViewSet(
@@ -20,7 +22,7 @@ class UserProfileViewSet(
     serializer_class = UserProfileSerializer
     permission_classes_by_action = {"retrieve": (IsOwnerOrAdmin,), "update": (IsAdmin,)}
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet:
         return TradingUser.objects.filter(pk=self.kwargs.get("pk"))
 
 
@@ -33,14 +35,14 @@ class SubscribeOnPromotionListViewSet(
     serializer_class = PromotionListSerializer
     permission_classes = (permissions.IsAuthenticated,)
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet:
         user = TradingUser.objects.prefetch_related("subscription").get(
             id=self.request.user.id
         )
         promotion_ids = [i.promotion_id for i in user.subscriptions.all()]
         return Promotion.objects.filter(id__in=promotion_ids)
 
-    def create(self, request, *args, **kwargs) -> response.Response:
+    def create(self, request: Request, *args: tuple, **kwargs: dict) -> response.Response:
         try:
             PromotionUserSubscriptions.objects.get(
                 user=request.user, promotion_id=request.data.get("pk")
@@ -57,7 +59,7 @@ class SubscribeOnPromotionListViewSet(
             status=status.HTTP_406_NOT_ACCEPTABLE,
         )
 
-    def delete(self, request) -> response.Response:
+    def delete(self, request: Request) -> response.Response:
         try:
             promotion_user_subscriptions_obj = PromotionUserSubscriptions.objects.get(
                 user=request.user, promotion_id=request.data.get("pk")

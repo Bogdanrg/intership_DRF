@@ -1,7 +1,14 @@
-class ActionPermissionMixin:
-    permission_classes_by_action = None
+from typing import Dict
 
-    def get_permissions(self):
+from rest_framework.serializers import Serializer
+
+
+class ActionPermissionMixin:
+    permission_classes_by_action: Dict[str, tuple]
+    action: str
+    permission_classes: list
+
+    def get_permissions(self) -> list:
         try:
             return [
                 permission()
@@ -13,9 +20,11 @@ class ActionPermissionMixin:
 
 
 class ActionSerializerMixin:
-    serializer_classes_by_action = None
+    serializer_class: Serializer
+    action: str
+    serializer_classes_by_action: Dict[str, Serializer]
 
-    def get_serializer_class(self):
+    def get_serializer_class(self) -> Serializer:
         try:
             return self.serializer_classes_by_action[self.action]
 

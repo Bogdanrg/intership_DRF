@@ -41,7 +41,7 @@ repos:
     rev: ''
     hooks:
       - id: mypy
-        exclude: src\auth_base\tasks.py
+        exclude: tests
         args:
           [
               --disallow-untyped-defs,

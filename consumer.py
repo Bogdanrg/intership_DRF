@@ -29,6 +29,7 @@ class PromotionConsumer:
         while True:
             for message in self.consumer:
                 consumed_message = json.loads(message.value)
+                logging.info(consumed_message)
                 event_type = consumed_message.get("action", "no_action")
                 event_handler = self.action_handlers.get(event_type)
                 if callable(event_handler):

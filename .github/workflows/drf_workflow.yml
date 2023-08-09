@@ -24,6 +24,10 @@ jobs:
           docker-compose up -d --build
       - name: Run tests
         run: docker-compose exec -T backend pytest
+      - name: Set up Python 3.11.4
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.11.4
       - name: Install pipenv
         run: |
             sudo apt install python3

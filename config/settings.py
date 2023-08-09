@@ -15,6 +15,8 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
+load_dotenv()
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -23,29 +25,37 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY")
-
+JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = bool(os.getenv("DEBUG", True))
-
-load_dotenv()
 
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(" ")
 
 # Application definition
 
-INSTALLED_APPS = [
-    "django.contrib.admin",
-    "django.contrib.auth",
-    "django.contrib.contenttypes",
-    "django.contrib.sessions",
-    "django.contrib.messages",
-    "django.contrib.staticfiles",
+CORE_APPS = [
+    "src.auth_base",
+    "src.v1",
     "src.profiles",
     "src.promotions",
     "src.orders",
     "src.auto_orders",
     "src.portfolio",
 ]
+
+DJANGO_APPS = [
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+]
+
+THIRD_PARTY_APPS = ["rest_framework", "rest_framework.authtoken"]
+
+
+INSTALLED_APPS = [*DJANGO_APPS, *CORE_APPS, *THIRD_PARTY_APPS]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -55,6 +65,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "config.middleware.AuthMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -80,10 +91,15 @@ WSGI_APPLICATION = "config.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
+
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": os.getenv("SQL_ENGINE", "django.db.backends.sqlite3"),
+        "NAME": os.getenv("SQL_DATABASE", os.path.join(BASE_DIR, "db.sqlite3")),
+        "USER": os.getenv("SQL_USER", "user"),
+        "PASSWORD": os.getenv("SQL_PASSWORD", "password"),
+        "HOST": os.getenv("SQL_HOST", "localhost"),
+        "PORT": os.getenv("SQL_PORT", "5432"),
     }
 }
 
@@ -105,6 +121,30 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth." "password_validation.NumericPasswordValidator",
     },
 ]
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.BasicAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+    ]
+}
+
+CELERY_BROKER_URL = os.getenv("REDIS_URL")
+CELERY_ACCEPT_CONTENT = {os.getenv("CELERY_ACCEPT_CONTENT")}
+CELERY_RESULT_SERIALIZER = os.getenv("CELERY_RESULT_SERIALIZER")
+CELERY_TASK_SERIALIZER = os.getenv("CELERY_TASK_SERIALIZER")
+CELERY_TIMEZONE = os.getenv("CELERY_TIMEZONE")
+
+EMAIL_BACKEND = os.getenv("EMAIL_BACKEND")
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS")
+EMAIL_HOST = os.getenv("EMAIL_HOST")
+EMAIL_PORT = os.getenv("EMAIL_PORT")
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
+
+KAFKA_TOPIC_NAME = os.getenv("KAFKA_TOPIC_NAME")
+BOOTSTRAP_SERVER = os.getenv("BOOTSTRAP_SERVER")
 
 
 # Internationalization

@@ -1,0 +1,75 @@
+from typing import Literal
+
+from rest_framework import permissions, response, status, viewsets
+from rest_framework.mixins import (
+    CreateModelMixin,
+    DestroyModelMixin,
+    RetrieveModelMixin,
+    UpdateModelMixin,
+)
+from rest_framework.request import Request
+from rest_framework.serializers import Serializer
+
+from src.base.mixins import ActionPermissionMixin, ActionSerializerMixin
+from src.base.permissions import IsAdmin, IsOwnerOrAdminOrAnalyst
+
+from .models import AutoOrder
+from .serializers import AutoOrderSerializer, CreateAutoOrderSerializer
+from .services import AutoOrderBuyService, AutoOrderSaleService
+
+
+class AutoOrderViewSet(
+    ActionSerializerMixin,
+    ActionPermissionMixin,
+    viewsets.GenericViewSet,
+    CreateModelMixin,
+    RetrieveModelMixin,
+    UpdateModelMixin,
+    DestroyModelMixin,
+):
+    queryset = AutoOrder.objects.all().select_related("promotion")
+
+    permission_classes_by_action = {
+        "create": (permissions.IsAuthenticated,),
+        "update": (IsAdmin,),
+        "retrieve": (IsOwnerOrAdminOrAnalyst,),
+        "destroy": (IsAdmin,),
+    }
+    serializer_classes_by_action = {
+        "create": CreateAutoOrderSerializer,
+        "update": AutoOrderSerializer,
+        "retrieve": AutoOrderSerializer,
+    }
+
+    def create(
+        self, request: Request, *args: tuple, **kwargs: dict
+    ) -> response.Response:
+        if request.data.get("action") == "purchase":
+            auto_order_service_buy = AutoOrderBuyService()
+            data = auto_order_service_buy.create_order(request.data, request.user)
+            if not data:
+                return response.Response(
+                    "You don't have enough money or something went wrong",
+                    status=status.HTTP_406_NOT_ACCEPTABLE,
+                )
+            data = self.init_data(data)
+            return response.Response(data, status=status.HTTP_200_OK)
+        if request.data.get("action") == "sale":
+            auto_order_service_sale = AutoOrderSaleService()
+            data = auto_order_service_sale.create_order(request.data, request.user)
+            if not data:
+                return response.Response(
+                    "You don't have enough promotions or something went wrong",
+                    status=status.HTTP_406_NOT_ACCEPTABLE,
+                )
+            data = self.init_data(data)
+            return response.Response(data, status=status.HTTP_200_OK)
+
+    def perform_create(self, serializer: Serializer) -> None:
+        serializer.save(user=self.request.user)
+
+    def init_data(self, data: dict | Literal[True]) -> dict:
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return serializer.data

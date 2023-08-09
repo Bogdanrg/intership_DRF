@@ -2,23 +2,23 @@ from decimal import Decimal
 
 from django.db.models import F
 from django.utils import timezone
-from rest_framework.request import Request
 
 from src.auto_orders.models import AutoOrder
 from src.portfolio.models import Portfolio, PortfolioUserPromotion
+from src.profiles.models import TradingUser
 from src.promotions.models import Promotion
 
 
 class AutoOrderBuyService:
     @staticmethod
-    def create_order(request: Request) -> dict | bool:
-        if AutoOrderBuyService.is_affordable(request):
+    def create_order(data: dict, user: TradingUser) -> dict | bool:
+        if AutoOrderBuyService.is_affordable(data, user):
             data = {
-                "promotion": request.data["pk"],
+                "promotion": data["pk"],
                 "status": "pending",
-                "quantity": request.data["quantity"],
+                "quantity": data["quantity"],
                 "action": "purchase",
-                "direction": request.data["direction"],
+                "direction": data["direction"],
             }
             return data
         return False
@@ -33,10 +33,8 @@ class AutoOrderBuyService:
             auto_order.save()
 
     @staticmethod
-    def is_affordable(request: Request) -> bool:
-        if request.user.balance >= (
-            Decimal(request.data["direction"]) * int(request.data["quantity"])
-        ):
+    def is_affordable(data: dict, user: TradingUser) -> bool:
+        if user.balance >= (Decimal(data["direction"]) * int(data["quantity"])):
             return True
         return False
 
@@ -90,14 +88,14 @@ class AutoOrderSaleService:
             auto_order.save()
 
     @staticmethod
-    def create_order(request: Request) -> dict | bool:
-        if AutoOrderSaleService.in_presence(request):
+    def create_order(data: dict, user: TradingUser) -> dict | bool:
+        if AutoOrderSaleService.in_presence(data, user):
             data = {
-                "promotion": request.data["pk"],
+                "promotion": data["pk"],
                 "status": "pending",
-                "quantity": request.data["quantity"],
+                "quantity": data["quantity"],
                 "action": "sale",
-                "direction": request.data["direction"],
+                "direction": data["direction"],
             }
             return data
         return False
@@ -111,15 +109,15 @@ class AutoOrderSaleService:
         auto_order.user.save()
 
     @staticmethod
-    def in_presence(request: Request) -> bool:
-        portfolio = Portfolio.objects.get(user=request.user)
+    def in_presence(data: dict, user: TradingUser) -> bool:
+        portfolio = Portfolio.objects.get(user=user)
         try:
             portfolio_user_promotion_object = PortfolioUserPromotion.objects.get(
-                portfolio=portfolio, promotion=request.data["pk"]
+                portfolio=portfolio, promotion=data["pk"]
             )
         except PortfolioUserPromotion.DoesNotExist:
             return False
-        if portfolio_user_promotion_object.quantity < int(request.data["quantity"]):
+        if portfolio_user_promotion_object.quantity < int(data["quantity"]):
             return False
         return True
 

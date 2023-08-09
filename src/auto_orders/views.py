@@ -46,7 +46,7 @@ class AutoOrderViewSet(
     ) -> response.Response:
         if request.data.get("action") == "purchase":
             auto_order_service_buy = AutoOrderBuyService()
-            data = auto_order_service_buy.create_order(request)
+            data = auto_order_service_buy.create_order(request.data, request.user)
             if not data:
                 return response.Response(
                     "You don't have enough money or something went wrong",
@@ -56,7 +56,7 @@ class AutoOrderViewSet(
             return response.Response(data, status=status.HTTP_200_OK)
         if request.data.get("action") == "sale":
             auto_order_service_sale = AutoOrderSaleService()
-            data = auto_order_service_sale.create_order(request)
+            data = auto_order_service_sale.create_order(request.data, request.user)
             if not data:
                 return response.Response(
                     "You don't have enough promotions or something went wrong",

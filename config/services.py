@@ -1,15 +1,15 @@
 import json
 import re
-from typing import Dict, Tuple
 
 import jwt
+from django.conf import settings
 from django.http import HttpResponse
 from rest_framework.request import Request
 
 import constants
 from src.profiles.models import TradingUser
 
-SECRET_KEY = constants.JWT_SECRET_KEY
+SECRET_KEY = settings.JWT_SECRET_KEY
 
 AUTH_PATHS = constants.AUTH_PATHS
 

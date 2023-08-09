@@ -48,7 +48,7 @@ class OrderCRUDViewSet(
             )
         if request.data.get("action") == "purchase":
             order_service = OrderBuyService()
-            data = order_service.create_order(request)
+            data = order_service.create_order(request.data, request.user)
             if not data:
                 return response.Response(
                     "You don't have enough money or something went wrong",
@@ -58,7 +58,7 @@ class OrderCRUDViewSet(
             return response.Response(data, status=status.HTTP_200_OK)
         if request.data.get("action") == "sale":
             sell_order = OrderSellService()
-            data = sell_order.create_order(request)
+            data = sell_order.create_order(request.data, request.user)
             if not data:
                 return response.Response(
                     "You don't have enough promotions or something went wrong",

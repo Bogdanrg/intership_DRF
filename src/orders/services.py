@@ -1,5 +1,4 @@
 from django.db.models import F
-from rest_framework.request import Request
 
 from src.portfolio.models import Portfolio, PortfolioUserPromotion
 from src.profiles.models import TradingUser
@@ -11,31 +10,29 @@ class OrderBuyService:
         self._user = None
         self._promotion = None
 
-    def create_order(self, request: Request) -> dict | bool:
-        self._promotion = Promotion.objects.get(pk=request.data.get("pk"))
+    def create_order(self, data: dict, user: TradingUser) -> dict | bool:
+        self._promotion = Promotion.objects.get(pk=data.get("pk"))
         if not self._promotion:
             return False
-        self._user = TradingUser.objects.get(pk=request.user.id)
+        self._user = TradingUser.objects.get(pk=user.id)
         data = {
             "promotion": self._promotion.pk,
-            "total_sum": int(request.data["quantity"]) * self._promotion.price,
+            "total_sum": int(data["quantity"]) * self._promotion.price,
             "status": "pending",
-            "quantity": request.data["quantity"],
+            "quantity": data["quantity"],
             "action": "purchase",
         }
-        if self._is_affordable(request):
+        if self._is_affordable(data):
             self._reduce_user_balance(data)
             self._update_portfolio(data)
             data["status"] = "completed successfully"
             return data
         return False
 
-    def _is_affordable(self, request: Request) -> bool:
-        if int(request.data["quantity"]) <= 0:
+    def _is_affordable(self, data: dict) -> bool:
+        if int(data["quantity"]) <= 0:
             return False
-        if self._user.balance >= (
-            self._promotion.price * int(request.data["quantity"])
-        ):
+        if self._user.balance >= (self._promotion.price * int(data["quantity"])):
             return True
         return False
 
@@ -65,31 +62,31 @@ class OrderSellService:
         self._user = None
         self._promotion = None
 
-    def _in_presence(self, request: Request) -> bool:
+    def _in_presence(self, data: dict) -> bool:
         portfolio = Portfolio.objects.get(user=self._user)
         try:
             portfolio_user_promotion_obj = PortfolioUserPromotion.objects.get(
-                promotion=request.data["pk"], portfolio=portfolio
+                promotion=data["promotion"], portfolio=portfolio
             )
-            if portfolio_user_promotion_obj.quantity < int(request.data["quantity"]):
+            if portfolio_user_promotion_obj.quantity < int(data["quantity"]):
                 return False
             return True
         except PortfolioUserPromotion.DoesNotExist:
             return False
 
-    def create_order(self, request: Request) -> dict | bool:
-        self._promotion = Promotion.objects.get(pk=request.data.get("pk"))
+    def create_order(self, data: dict, user: TradingUser) -> dict | bool:
+        self._promotion = Promotion.objects.get(pk=data.get("pk"))
         if not self._promotion:
             return False
-        self._user = TradingUser.objects.get(pk=request.user.id)
+        self._user = TradingUser.objects.get(pk=user.id)
         data = {
             "promotion": self._promotion.pk,
-            "total_sum": int(request.data["quantity"]) * self._promotion.price,
+            "total_sum": int(data["quantity"]) * self._promotion.price,
             "status": "pending",
-            "quantity": request.data["quantity"],
+            "quantity": data["quantity"],
             "action": "sale",
         }
-        if self._in_presence(request):
+        if self._in_presence(data):
             self._increase_user_balance(data)
             self._update_portfolio(data)
             data["status"] = "completed successfully"

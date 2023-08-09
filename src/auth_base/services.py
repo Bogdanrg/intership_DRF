@@ -1,14 +1,14 @@
 import datetime
 
 import jwt
+from django.conf import settings
 from django.contrib.auth.hashers import check_password
 
-import constants
 from src.profiles.models import TradingUser
 
 from .serializers import JWTPairSerializer, LoginUserSerializer
 
-JWT_SECRET_KEY = constants.JWT_SECRET_KEY
+JWT_SECRET_KEY = settings.JWT_SECRET_KEY
 
 
 class JWTAuthService:

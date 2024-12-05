@@ -4,10 +4,70 @@ services:
   backend:
     build: .
     container_name: "DRF"
-    entrypoint: ["bash", "entrypoint.sh"]
+    entrypoint: [ "bash", "entrypoint.sh" ]
     ports:
-    - "8000:8000"
+      - "8000:8000"
     volumes:
       - .:/usr/src/app/
+    networks:
+      - trading
     env_file:
       - .env
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres
+    container_name: 'postgres_db'
+    volumes:
+      - trading:/var/lib/postgresql/data/
+    networks:
+      - trading
+    ports:
+      - "5433:5432"
+    env_file:
+      - .env
+
+  broker:
+    image: redis
+    container_name: "redis"
+    networks:
+      - trading
+    ports:
+      - "6379:6379"
+    restart: always
+    depends_on:
+      - backend
+
+  worker:
+    build: .
+    container_name: "celery"
+    entrypoint: [ "bash", "celery-ep.sh" ]
+    volumes:
+      - .:/usr/src/app/
+    networks:
+      - trading
+    env_file:
+      - .env
+    depends_on:
+      - broker
+
+  queue:
+    build: .
+    container_name: "queue"
+    entrypoint: [ "bash", "consumer-ep.sh" ]
+    networks:
+      - trading
+    env_file:
+      - .env
+    restart: always
+
+
+volumes:
+  trading:
+    external: true
+
+
+networks:
+  trading:
+    external: true

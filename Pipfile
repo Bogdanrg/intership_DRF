@@ -11,6 +11,11 @@ django-enum = "*"
 pillow = "*"
 pre-commit = "*"
 djangorestframework = "*"
+psycopg2 = "*"
+pyjwt = "*"
+celery = "*"
+redis = "*"
+kafka-python = "*"
 
 [dev-packages]
 
